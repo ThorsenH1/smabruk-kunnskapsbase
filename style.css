@@ -1548,7 +1548,9 @@ a {
     gap: 12px;
 }
 
-/* === Settings === */
+.full-width {
+    width: 100% !important;
+}
 .settings-content {
     padding: 20px;
 }
@@ -1605,17 +1607,12 @@ a {
     transition: var(--transition);
 }
 
-.toggle-slider::before {
-    position: absolute;
-    content: "";
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: var(--transition);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(24px);
 }
 
 .toggle-switch input:checked + .toggle-slider {
@@ -1627,7 +1624,7 @@ a {
 }
 
 .full-width {
-    width: 100%;
+    width: 100% !important;
 }
 
 .modal-content.large {
@@ -1655,6 +1652,29 @@ a {
 
 .danger-hint {
     font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+/* Settings specific styles */
+.settings-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.settings-hint {
+    font-size: 0.85rem;
     color: var(--text-muted);
     margin-bottom: 12px;
 }
@@ -1695,6 +1715,28 @@ body.dark-mode .checklist-card {
 body.dark-mode .danger-zone {
     background: #3a2020;
     border-color: #5a3030;
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background: #333;
+    color: white;
+    border-color: #404040;
+}
+
+body.dark-mode .form-group input:focus,
+body.dark-mode .form-group select:focus,
+body.dark-mode .form-group textarea:focus {
+    border-color: var(--primary);
+}
+
+body.dark-mode .toggle-slider {
+    background: #404040;
+}
+
+body.dark-mode .toggle-switch input:checked + .toggle-slider {
+    background: var(--success);
 }
 
 /* Font Size Adjustments */
