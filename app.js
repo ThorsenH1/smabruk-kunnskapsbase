@@ -203,6 +203,17 @@ async function initApp() {
 
 async function loadAllData() {
     state.categories = await loadCollection('categories');
+    
+    // Ensure all default categories exist
+    const existingIds = state.categories.map(c => c.id);
+    for (const cat of DEFAULT_CATEGORIES) {
+        if (!existingIds.includes(cat.id)) {
+            await saveToFirestore('categories', cat.id, cat);
+            state.categories.push(cat);
+        }
+    }
+    
+    // If no categories at all, add all defaults
     if (state.categories.length === 0) {
         for (const cat of DEFAULT_CATEGORIES) {
             await saveToFirestore('categories', cat.id, cat);
