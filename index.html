@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
-    <link rel="stylesheet" href="style.css?v=4.1">
+    <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 <body>
     <!-- Login Screen -->
@@ -60,6 +60,21 @@
         <main class="main-content">
             <!-- Dashboard View -->
             <section id="dashboardView" class="view active">
+                <!-- Date/Time/Weather Header -->
+                <div class="datetime-weather-bar">
+                    <div class="datetime-section">
+                        <div id="clock" class="clock">--:--</div>
+                        <div id="dateDisplay" class="date-display">Laster...</div>
+                        <div id="seasonDisplay" class="season-badge">🌸 Sesong</div>
+                    </div>
+                    <div id="weatherWidget" class="weather-widget">
+                        <div class="weather-loading">🌤️ Henter vær...</div>
+                    </div>
+                </div>
+
+                <!-- Season Progress -->
+                <div id="seasonProgress" class="season-progress-section"></div>
+
                 <!-- Stats Cards -->
                 <div class="stats-row">
                     <div class="stat-card">
@@ -466,6 +481,22 @@
                         <textarea id="settingsAddress" rows="3" placeholder="Gårdsvegen 1&#10;1234 Bygda"></textarea>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <h3>🌤️ Værmelding</h3>
+                    <p class="settings-hint">Angi koordinater for lokal værmelding</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="settingsLatitude">Breddegrad</label>
+                            <input type="number" step="0.0001" id="settingsLatitude" placeholder="60.39">
+                        </div>
+                        <div class="form-group">
+                            <label for="settingsLongitude">Lengdegrad</label>
+                            <input type="number" step="0.0001" id="settingsLongitude" placeholder="5.32">
+                        </div>
+                    </div>
+                    <button type="button" id="getLocationBtn" class="btn-secondary full-width">📍 Bruk min posisjon</button>
+                </div>
                 
                 <div class="settings-section">
                     <h3>🎨 Utseende</h3>
@@ -525,7 +556,7 @@
             <div class="about-content">
                 <div class="about-logo">🏡</div>
                 <h3>Småbruk Kunnskapsbase</h3>
-                <p class="version">Versjon 4.1.0</p>
+                <p class="version">Versjon 4.2.0</p>
                 <p class="about-text">
                     En app for å samle og bevare kunnskap om ditt småbruk. 
                     Lagre tips, oppskrifter, vedlikeholdsrutiner og kontaktinformasjon 

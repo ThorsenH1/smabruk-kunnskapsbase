@@ -1,10 +1,10 @@
 // ==========================================
-// SMÅBRUK KUNNSKAPSBASE APP v4.1
+// SMÅBRUK KUNNSKAPSBASE APP v4.2
 // Firebase-basert med Google Auth
-// Komplett, debugget og profesjonell
+// Med værmelding, sesong og auto-reset
 // ==========================================
 
-const APP_VERSION = '4.1.0';
+const APP_VERSION = '4.2.0';
 
 // ===== Firebase Configuration =====
 const firebaseConfig = {
@@ -13,14 +13,31 @@ const firebaseConfig = {
     projectId: "smabruk-info-8abbe",
     storageBucket: "smabruk-info-8abbe.firebasestorage.app",
     messagingSenderId: "895619707192",
-    appId: "1:895619707192:web:0f4e6acf82a97b656c11cd",
-    measurementId: "G-CN2RDYN9L6"
+    appId: "1:895619707192:web:0f4e6acf82a97b656c11cd"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// ===== Season Definitions =====
+const SEASONS = {
+    var: { name: 'Vår', icon: '🌸', months: [3, 4, 5] },
+    sommer: { name: 'Sommer', icon: '☀️', months: [6, 7, 8] },
+    host: { name: 'Høst', icon: '🍂', months: [9, 10, 11] },
+    vinter: { name: 'Vinter', icon: '❄️', months: [12, 1, 2] }
+};
+
+function getCurrentSeason() {
+    const month = new Date().getMonth() + 1;
+    for (const [key, season] of Object.entries(SEASONS)) {
+        if (season.months.includes(month)) {
+            return { key, ...season };
+        }
+    }
+    return { key: 'vinter', ...SEASONS.vinter };
+}
 
 // ===== Default Data =====
 const DEFAULT_CATEGORIES = [
@@ -43,6 +60,7 @@ const DEFAULT_CHECKLISTS = [
         id: 'var-sjekkliste',
         name: 'Vårklargjøring',
         icon: '🌸',
+        season: 'var',
         items: [
             { text: 'Sjekk taket for vinterskader', done: false },
             { text: 'Rens takrenner og nedløp', done: false },
@@ -62,6 +80,7 @@ const DEFAULT_CHECKLISTS = [
         id: 'sommer-sjekkliste',
         name: 'Sommeroppgaver',
         icon: '☀️',
+        season: 'sommer',
         items: [
             { text: 'Vann hage regelmessig', done: false },
             { text: 'Slå gress ukentlig', done: false },
@@ -81,6 +100,7 @@ const DEFAULT_CHECKLISTS = [
         id: 'host-sjekkliste',
         name: 'Høstklargjøring',
         icon: '🍂',
+        season: 'host',
         items: [
             { text: 'Høst inn poteter og rotfrukter', done: false },
             { text: 'Rydd hagen for vinteren', done: false },
@@ -101,6 +121,7 @@ const DEFAULT_CHECKLISTS = [
         id: 'vinter-sjekkliste',
         name: 'Vinteroppgaver',
         icon: '❄️',
+        season: 'vinter',
         items: [
             { text: 'Måk snø fra tak ved behov', done: false },
             { text: 'Hold innkjørsel og stier ryddet', done: false },
@@ -132,9 +153,12 @@ const state = {
         address: '',
         darkMode: false,
         notifications: true,
-        autoBackup: false,
-        fontSize: 'normal'
+        fontSize: 'normal',
+        latitude: 60.39,
+        longitude: 5.32,
+        lastSeasonReset: null
     },
+    weather: null,
     recentArticles: [],
     currentView: 'dashboardView',
     currentArticle: null,
@@ -142,7 +166,6 @@ const state = {
     currentCategory: null,
     editingArticle: null,
     editingContact: null,
-    editingChecklist: null,
     tempImages: []
 };
 
@@ -173,28 +196,33 @@ async function saveToFirestore(collection, id, data) {
     if (!col) return null;
     
     const docData = { ...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-    if (id) {
-        await col.doc(id).set(docData, { merge: true });
-        return id;
-    } else {
-        docData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        const ref = await col.add(docData);
-        return ref.id;
+    try {
+        if (id) {
+            await col.doc(id).set(docData, { merge: true });
+            return id;
+        } else {
+            docData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            const ref = await col.add(docData);
+            return ref.id;
+        }
+    } catch (e) {
+        console.error('Save error:', e);
+        throw e;
     }
 }
 
 async function deleteFromFirestore(collection, id) {
     const col = userDoc(collection);
-    if (col) {
-        try {
-            await col.doc(id).delete();
-            return true;
-        } catch (e) {
-            console.error('Delete error:', e);
-            return false;
-        }
+    if (!col) return false;
+    
+    try {
+        await col.doc(id).delete();
+        console.log(`Deleted ${id} from ${collection}`);
+        return true;
+    } catch (e) {
+        console.error('Delete error:', e);
+        return false;
     }
-    return false;
 }
 
 async function loadCollection(collection) {
@@ -210,42 +238,48 @@ async function loadCollection(collection) {
 }
 
 // ===== Auth Functions =====
-let isLoggingIn = false;
-
 function setupAuth() {
     on('googleLoginBtn', 'click', async () => {
-        if (isLoggingIn) return;
-        isLoggingIn = true;
-        
         const btn = $('googleLoginBtn');
-        if (btn) btn.disabled = true;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-small"></span> Logger inn...';
+        }
         
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithPopup(provider);
+            await auth.signInWithRedirect(provider);
         } catch (error) {
-            if (error.code !== 'auth/cancelled-popup-request' && 
-                error.code !== 'auth/popup-closed-by-user') {
-                showToast('Innlogging feilet', 'error');
+            console.error('Login error:', error);
+            showToast('Innlogging feilet', 'error');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Logg inn med Google`;
             }
-        } finally {
-            isLoggingIn = false;
-            if (btn) btn.disabled = false;
+        }
+    });
+
+    auth.getRedirectResult().then((result) => {
+        if (result.user) {
+            console.log('Redirect login successful');
+        }
+    }).catch((error) => {
+        if (error.code !== 'auth/credential-already-in-use') {
+            console.error('Redirect error:', error);
         }
     });
 
     auth.onAuthStateChanged(async (user) => {
+        const loginScreen = $('loginScreen');
+        const mainApp = $('mainApp');
+        const splashScreen = $('splashScreen');
+        
         if (user) {
             state.user = user;
-            const loginScreen = $('loginScreen');
             if (loginScreen) loginScreen.classList.add('hidden');
             await initApp();
         } else {
             state.user = null;
-            const loginScreen = $('loginScreen');
-            const mainApp = $('mainApp');
-            const splashScreen = $('splashScreen');
-            
             if (loginScreen) loginScreen.classList.remove('hidden');
             if (mainApp) mainApp.classList.add('hidden');
             if (splashScreen) splashScreen.classList.add('hidden');
@@ -254,6 +288,7 @@ function setupAuth() {
 }
 
 async function doSignOut() {
+    console.log('Signing out...');
     try {
         await auth.signOut();
         state.user = null;
@@ -261,11 +296,9 @@ async function doSignOut() {
         state.articles = [];
         state.contacts = [];
         state.checklists = [];
-        state.settings = {};
         state.recentArticles = [];
         showToast('Logget ut');
-        // Force reload to reset app state
-        setTimeout(() => window.location.reload(), 500);
+        setTimeout(() => window.location.reload(), 300);
     } catch (error) {
         console.error('Logout error:', error);
         showToast('Kunne ikke logge ut', 'error');
@@ -279,8 +312,11 @@ async function initApp() {
     
     try {
         await loadAllData();
+        await checkSeasonReset();
         setupEventListeners();
         setupProfileButton();
+        startClock();
+        fetchWeather();
         renderDashboard();
         applySettings();
         
@@ -288,14 +324,14 @@ async function initApp() {
             if (splash) splash.classList.add('hidden');
             const mainApp = $('mainApp');
             if (mainApp) mainApp.classList.remove('hidden');
-        }, 800);
+        }, 600);
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {});
         }
         
     } catch (error) {
-        console.error('Init error:', error.message);
+        console.error('Init error:', error);
         if (splash) splash.classList.add('hidden');
         const mainApp = $('mainApp');
         if (mainApp) mainApp.classList.remove('hidden');
@@ -304,10 +340,8 @@ async function initApp() {
 }
 
 async function loadAllData() {
-    // Load categories
     state.categories = await loadCollection('categories');
     
-    // Ensure all default categories exist
     const existingCatIds = state.categories.map(c => c.id);
     for (const cat of DEFAULT_CATEGORIES) {
         if (!existingCatIds.includes(cat.id)) {
@@ -316,21 +350,18 @@ async function loadAllData() {
         }
     }
     
-    // Load articles, contacts, checklists
     state.articles = await loadCollection('articles');
     state.contacts = await loadCollection('contacts');
     state.checklists = await loadCollection('checklists');
     
-    // Ensure seasonal checklists exist
     const existingChecklistIds = state.checklists.map(c => c.id);
     for (const checklist of DEFAULT_CHECKLISTS) {
         if (!existingChecklistIds.includes(checklist.id)) {
             await saveToFirestore('checklists', checklist.id, checklist);
-            state.checklists.push(checklist);
+            state.checklists.push({ ...checklist });
         }
     }
     
-    // Load settings
     try {
         const userDocRef = db.collection('users').doc(state.user.uid);
         const settingsDoc = await userDocRef.get();
@@ -344,36 +375,58 @@ async function loadAllData() {
     }
 }
 
-function setupProfileButton() {
-    const syncBtn = $('syncBtn');
-    if (syncBtn) {
-        if (state.user?.photoURL) {
-            syncBtn.innerHTML = `<img src="${state.user.photoURL}" class="user-avatar" alt="Profil" style="width:28px;height:28px;border-radius:50%;">`;
+async function checkSeasonReset() {
+    const currentSeason = getCurrentSeason();
+    const lastReset = state.settings.lastSeasonReset;
+    
+    if (lastReset !== currentSeason.key) {
+        console.log(`New season detected: ${currentSeason.name}. Resetting checklist.`);
+        
+        const seasonChecklistId = `${currentSeason.key}-sjekkliste`;
+        const checklist = state.checklists.find(c => c.id === seasonChecklistId);
+        
+        if (checklist) {
+            const resetItems = (checklist.items || []).map(item => ({ ...item, done: false }));
+            checklist.items = resetItems;
+            
+            await saveToFirestore('checklists', checklist.id, { items: resetItems });
+            showToast(`${currentSeason.icon} ${currentSeason.name} har begynt! Sjekkliste nullstilt.`);
         }
-        // Always set click handler
-        syncBtn.addEventListener('click', showLogoutDialog);
+        
+        state.settings.lastSeasonReset = currentSeason.key;
+        await db.collection('users').doc(state.user.uid).set({
+            settings: state.settings
+        }, { merge: true });
     }
 }
 
-function showLogoutDialog() {
-    showConfirm('Logg ut?', 'Vil du logge ut av appen?', doSignOut, '👋');
+function setupProfileButton() {
+    const syncBtn = $('syncBtn');
+    if (!syncBtn) return;
+    
+    if (state.user?.photoURL) {
+        syncBtn.innerHTML = `<img src="${state.user.photoURL}" class="user-avatar" alt="Profil">`;
+    }
+    
+    syncBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showConfirm('Logg ut?', 'Vil du logge ut av appen?', doSignOut, '👋');
+    };
 }
 
 function applySettings() {
-    // Update farm name in header
     const farmName = $('farmName');
     if (farmName && state.settings?.farmName) {
         farmName.textContent = state.settings.farmName;
     }
     
-    // Apply dark mode
     if (state.settings?.darkMode) {
         document.body.classList.add('dark-mode');
     } else {
         document.body.classList.remove('dark-mode');
     }
     
-    // Apply font size
     document.body.classList.remove('font-small', 'font-large');
     if (state.settings?.fontSize === 'small') {
         document.body.classList.add('font-small');
@@ -382,31 +435,130 @@ function applySettings() {
     }
 }
 
+// ===== Clock & Date =====
+function startClock() {
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+function updateClock() {
+    const clockEl = $('clock');
+    const dateEl = $('dateDisplay');
+    const seasonEl = $('seasonDisplay');
+    
+    const now = new Date();
+    
+    if (clockEl) {
+        clockEl.textContent = now.toLocaleTimeString('no-NO', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+    
+    if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString('no-NO', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    if (seasonEl) {
+        const season = getCurrentSeason();
+        seasonEl.innerHTML = `${season.icon} ${season.name}`;
+    }
+}
+
+// ===== Weather =====
+async function fetchWeather() {
+    const lat = state.settings?.latitude || 60.39;
+    const lon = state.settings?.longitude || 5.32;
+    
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.current) {
+            state.weather = {
+                temp: Math.round(data.current.temperature_2m),
+                code: data.current.weather_code,
+                wind: Math.round(data.current.wind_speed_10m)
+            };
+            renderWeather();
+        }
+    } catch (e) {
+        console.warn('Could not fetch weather:', e);
+    }
+    
+    setTimeout(fetchWeather, 30 * 60 * 1000);
+}
+
+function getWeatherIcon(code) {
+    if (code === 0) return '☀️';
+    if (code <= 3) return '⛅';
+    if (code <= 49) return '🌫️';
+    if (code <= 59) return '🌧️';
+    if (code <= 69) return '🌨️';
+    if (code <= 79) return '❄️';
+    if (code <= 84) return '🌧️';
+    if (code <= 94) return '⛈️';
+    if (code <= 99) return '🌩️';
+    return '🌤️';
+}
+
+function getWeatherDesc(code) {
+    if (code === 0) return 'Klart';
+    if (code <= 3) return 'Delvis skyet';
+    if (code <= 49) return 'Tåke';
+    if (code <= 59) return 'Yr';
+    if (code <= 69) return 'Regn';
+    if (code <= 79) return 'Snø';
+    if (code <= 84) return 'Regnbyger';
+    if (code <= 94) return 'Torden';
+    return 'Varierende';
+}
+
+function renderWeather() {
+    const weatherEl = $('weatherWidget');
+    if (!weatherEl || !state.weather) return;
+    
+    const { temp, code, wind } = state.weather;
+    const icon = getWeatherIcon(code);
+    const desc = getWeatherDesc(code);
+    
+    weatherEl.innerHTML = `
+        <div class="weather-main">
+            <span class="weather-icon">${icon}</span>
+            <span class="weather-temp">${temp}°C</span>
+        </div>
+        <div class="weather-details">
+            <span class="weather-desc">${desc}</span>
+            <span class="weather-wind">💨 ${wind} km/t</span>
+        </div>
+    `;
+}
+
 // ===== Event Listeners =====
 function setupEventListeners() {
-    // Search
     on('searchInput', 'input', handleSearch);
     on('clearSearch', 'click', clearSearch);
     
-    // Header
     on('homeBtn', 'click', () => showView('dashboardView'));
     on('menuBtn', 'click', openMenu);
     
-    // Quick actions
     on('quickAddBtn', 'click', () => openArticleModal());
     on('quickContactBtn', 'click', () => showView('contactsView'));
     on('quickChecklistBtn', 'click', () => showView('checklistsView'));
     on('quickEmergencyBtn', 'click', () => showView('emergencyView'));
     
-    // Dashboard sections
     on('seeAllFavorites', 'click', () => showView('favoritesView'));
     on('clearRecent', 'click', clearRecentArticles);
     on('manageCategoriesBtn', 'click', openCategoryModal);
     
-    // FAB
     on('addBtn', 'click', () => openArticleModal());
     
-    // Navigation
     $$('.nav-item[data-view]').forEach(btn => {
         btn.addEventListener('click', () => {
             const view = btn.dataset.view;
@@ -418,11 +570,9 @@ function setupEventListeners() {
         });
     });
     
-    // Articles view
     on('backToCategories', 'click', () => showView('dashboardView'));
     on('sortSelect', 'change', renderArticlesList);
     
-    // Article detail
     on('backToArticles', 'click', () => {
         if (state.currentCategory) {
             showView('articlesView');
@@ -432,32 +582,24 @@ function setupEventListeners() {
     });
     on('favoriteArticleBtn', 'click', toggleFavorite);
     on('editArticleBtn', 'click', () => openArticleModal(state.currentArticle));
-    on('deleteArticleBtn', 'click', deleteCurrentArticle);
+    on('deleteArticleBtn', 'click', confirmDeleteArticle);
     
-    // Search view
     on('backFromSearch', 'click', () => showView('dashboardView'));
     
-    // Contacts view
     on('backFromContacts', 'click', () => showView('dashboardView'));
     on('addContactBtn', 'click', () => openContactModal());
     
-    // Checklists view
     on('backFromChecklists', 'click', () => showView('dashboardView'));
     on('addChecklistBtn', 'click', () => openChecklistModal());
     
-    // Checklist detail
     on('backFromChecklistDetail', 'click', () => showView('checklistsView'));
-    on('resetChecklistBtn', 'click', resetChecklist);
-    on('deleteChecklistBtn', 'click', deleteCurrentChecklist);
+    on('resetChecklistBtn', 'click', confirmResetChecklist);
+    on('deleteChecklistBtn', 'click', confirmDeleteChecklist);
     on('addChecklistItemBtn', 'click', addChecklistItem);
     
-    // Emergency view
     on('backFromEmergency', 'click', () => showView('dashboardView'));
-    
-    // Favorites view
     on('backFromFavorites', 'click', () => showView('dashboardView'));
     
-    // Menu
     on('closeMenu', 'click', closeMenu);
     on('menuOverlay', 'click', closeMenu);
     on('menuHome', 'click', () => { closeMenu(); showView('dashboardView'); });
@@ -467,9 +609,8 @@ function setupEventListeners() {
     on('menuExport', 'click', () => { closeMenu(); exportData(); });
     on('menuImport', 'click', () => { closeMenu(); importData(); });
     on('menuAbout', 'click', () => { closeMenu(); openAboutModal(); });
-    on('menuLogout', 'click', () => { closeMenu(); showLogoutDialog(); });
+    on('menuLogout', 'click', () => { closeMenu(); showConfirm('Logg ut?', 'Vil du logge ut av appen?', doSignOut, '👋'); });
     
-    // Article modal
     on('closeArticleModal', 'click', closeArticleModal);
     on('articleForm', 'submit', saveArticle);
     on('addImageBtn', 'click', () => $('imageInput')?.click());
@@ -477,40 +618,34 @@ function setupEventListeners() {
     on('imageInput', 'change', handleImageSelect);
     on('cameraInput', 'change', handleImageSelect);
     
-    // Category modal
     on('closeCategoryModal', 'click', closeCategoryModal);
     on('addCategoryBtn', 'click', addCategory);
     on('selectEmojiBtn', 'click', openEmojiPicker);
     on('newCategoryName', 'keypress', e => { if (e.key === 'Enter') { e.preventDefault(); addCategory(); } });
     
-    // Contact modal
     on('closeContactModal', 'click', closeContactModal);
     on('contactForm', 'submit', saveContact);
+    on('deleteContactBtn', 'click', confirmDeleteContact);
     
-    // Checklist modal
     on('closeChecklistModal', 'click', closeChecklistModal);
     on('checklistForm', 'submit', saveChecklist);
     
-    // Sync modal
     on('closeSyncModal', 'click', closeSyncModal);
     on('syncExportBtn', 'click', exportData);
     on('syncImportBtn', 'click', importData);
     
-    // Settings modal
     on('closeSettingsModal', 'click', closeSettingsModal);
     on('saveSettingsBtn', 'click', saveSettings);
-    on('clearAllDataBtn', 'click', clearAllData);
+    on('clearAllDataBtn', 'click', confirmClearAllData);
+    on('getLocationBtn', 'click', getGeoLocation);
     
-    // About modal
     on('closeAboutModal', 'click', closeAboutModal);
     
-    // Confirm modal
     on('confirmCancel', 'click', closeConfirmModal);
+    on('confirmOk', 'click', executeConfirm);
     
-    // Lightbox
     on('lightbox', 'click', closeLightbox);
     
-    // Close modals on overlay click
     $$('.modal').forEach(modal => {
         modal.addEventListener('click', e => {
             if (e.target === modal) closeAllModals();
@@ -525,7 +660,6 @@ function showView(viewId) {
     if (view) view.classList.add('active');
     state.currentView = viewId;
     
-    // Render view content
     switch(viewId) {
         case 'dashboardView': renderDashboard(); break;
         case 'contactsView': renderContacts(); break;
@@ -534,7 +668,6 @@ function showView(viewId) {
         case 'favoritesView': renderFavorites(); break;
     }
     
-    // Update nav
     $$('.nav-item').forEach(n => {
         n.classList.toggle('active', n.dataset.view === viewId);
     });
@@ -543,8 +676,8 @@ function showView(viewId) {
 // ===== Dashboard =====
 function renderDashboard() {
     const favorites = state.articles.filter(a => a.favorite);
+    const season = getCurrentSeason();
     
-    // Stats
     const totalArticles = $('totalArticles');
     const totalCategories = $('totalCategories');
     const totalFavorites = $('totalFavorites');
@@ -553,7 +686,6 @@ function renderDashboard() {
     if (totalCategories) totalCategories.textContent = state.categories.length;
     if (totalFavorites) totalFavorites.textContent = favorites.length;
     
-    // Favorites section
     const favSection = $('favoritesSection');
     const favList = $('favoritesList');
     if (favSection && favList) {
@@ -570,7 +702,6 @@ function renderDashboard() {
         }
     }
     
-    // Recent section
     const recentSection = $('recentSection');
     const recentList = $('recentList');
     if (recentSection && recentList) {
@@ -591,7 +722,36 @@ function renderDashboard() {
         }
     }
     
+    const seasonProgress = $('seasonProgress');
+    if (seasonProgress) {
+        const seasonChecklistId = `${season.key}-sjekkliste`;
+        const checklist = state.checklists.find(c => c.id === seasonChecklistId);
+        
+        if (checklist) {
+            const items = checklist.items || [];
+            const done = items.filter(i => i.done).length;
+            const pct = items.length ? Math.round(done / items.length * 100) : 0;
+            
+            seasonProgress.innerHTML = `
+                <div class="season-checklist-card" onclick="openChecklist('${checklist.id}')">
+                    <div class="season-info">
+                        <span class="season-icon">${season.icon}</span>
+                        <div>
+                            <strong>${checklist.name}</strong>
+                            <div class="mini-progress">
+                                <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
+                                <span>${done}/${items.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+            `;
+        }
+    }
+    
     renderCategoriesGrid();
+    renderWeather();
 }
 
 function renderCategoriesGrid() {
@@ -644,7 +804,6 @@ function renderArticlesList() {
     
     let articles = state.articles.filter(a => a.category === state.currentCategory);
     
-    // Sort
     const sortSelect = $('sortSelect');
     const sortBy = sortSelect?.value || 'alpha';
     
@@ -693,9 +852,7 @@ function openArticle(articleId) {
     if (!content) return;
     
     const favBtn = $('favoriteArticleBtn');
-    if (favBtn) {
-        favBtn.classList.toggle('active', article.favorite);
-    }
+    if (favBtn) favBtn.classList.toggle('active', article.favorite);
     
     content.innerHTML = `
         <div class="article-header">
@@ -769,16 +926,28 @@ async function toggleFavorite() {
     showToast(state.currentArticle.favorite ? 'Lagt til i favoritter ⭐' : 'Fjernet fra favoritter');
 }
 
-function deleteCurrentArticle() {
+function confirmDeleteArticle() {
+    if (!state.currentArticle) return;
+    showConfirm(
+        'Slett artikkel?', 
+        `Er du sikker på at du vil slette "${state.currentArticle.title}"?`, 
+        deleteCurrentArticle, 
+        '🗑️'
+    );
+}
+
+async function deleteCurrentArticle() {
     if (!state.currentArticle) return;
     
-    showConfirm('Slett artikkel?', `Er du sikker på at du vil slette "${state.currentArticle.title}"?`, async () => {
-        await deleteFromFirestore('articles', state.currentArticle.id);
+    const success = await deleteFromFirestore('articles', state.currentArticle.id);
+    if (success) {
         state.articles = state.articles.filter(a => a.id !== state.currentArticle.id);
         state.currentArticle = null;
         showToast('Artikkel slettet');
         showView('dashboardView');
-    }, '🗑️');
+    } else {
+        showToast('Kunne ikke slette artikkel', 'error');
+    }
 }
 
 // ===== Article Modal =====
@@ -795,7 +964,6 @@ function openArticleModal(article = null) {
     
     if (title) title.textContent = article ? 'Rediger artikkel' : 'Ny artikkel';
     
-    // Populate category dropdown
     if (categorySelect) {
         categorySelect.innerHTML = state.categories.map(c => 
             `<option value="${c.id}">${c.icon} ${c.name}</option>`
@@ -877,16 +1045,11 @@ function compressImage(dataUrl, callback) {
 async function saveArticle(e) {
     e.preventDefault();
     
-    const titleInput = $('articleTitleInput');
-    const categorySelect = $('articleCategory');
-    const tagsInput = $('articleTags');
-    const textInput = $('articleText');
-    
     const data = {
-        title: titleInput?.value?.trim() || '',
-        category: categorySelect?.value || '',
-        tags: tagsInput?.value?.trim() || '',
-        content: textInput?.value?.trim() || '',
+        title: $('articleTitleInput')?.value?.trim() || '',
+        category: $('articleCategory')?.value || '',
+        tags: $('articleTags')?.value?.trim() || '',
+        content: $('articleText')?.value?.trim() || '',
         images: state.tempImages,
         favorite: state.editingArticle?.favorite || false
     };
@@ -945,7 +1108,7 @@ function renderCategoryList() {
                 <span class="cat-icon">${cat.icon}</span>
                 <span class="cat-name">${escapeHtml(cat.name)}</span>
                 <span class="cat-count">${count}</span>
-                <button class="delete-cat-btn" onclick="handleDeleteCategory('${cat.id}', ${count}, ${isDefault})" ${isDefault ? 'title="Standard kategori"' : ''}>
+                <button class="delete-cat-btn" onclick="confirmDeleteCategory('${cat.id}', ${count}, ${isDefault})" ${isDefault ? 'title="Standard kategori"' : ''}>
                     ${isDefault ? '🔒' : '✕'}
                 </button>
             </div>
@@ -953,7 +1116,7 @@ function renderCategoryList() {
     }).join('');
 }
 
-async function handleDeleteCategory(categoryId, articleCount, isDefault) {
+function confirmDeleteCategory(categoryId, articleCount, isDefault) {
     if (isDefault) {
         showToast('Kan ikke slette standard kategorier', 'error');
         return;
@@ -964,17 +1127,19 @@ async function handleDeleteCategory(categoryId, articleCount, isDefault) {
         return;
     }
     
-    showConfirm('Slett kategori?', 'Er du sikker på at du vil slette denne kategorien?', async () => {
-        const success = await deleteFromFirestore('categories', categoryId);
-        if (success) {
-            state.categories = state.categories.filter(c => c.id !== categoryId);
-            renderCategoryList();
-            renderDashboard();
-            showToast('Kategori slettet ✓');
-        } else {
-            showToast('Kunne ikke slette kategori', 'error');
-        }
-    }, '🗑️');
+    showConfirm('Slett kategori?', 'Er du sikker på at du vil slette denne kategorien?', () => deleteCategory(categoryId), '🗑️');
+}
+
+async function deleteCategory(categoryId) {
+    const success = await deleteFromFirestore('categories', categoryId);
+    if (success) {
+        state.categories = state.categories.filter(c => c.id !== categoryId);
+        renderCategoryList();
+        renderDashboard();
+        showToast('Kategori slettet ✓');
+    } else {
+        showToast('Kunne ikke slette kategori', 'error');
+    }
 }
 
 async function addCategory() {
@@ -1084,9 +1249,7 @@ function renderContacts() {
 
 function editContact(contactId) {
     const contact = state.contacts.find(c => c.id === contactId);
-    if (contact) {
-        openContactModal(contact);
-    }
+    if (contact) openContactModal(contact);
 }
 
 function openContactModal(contact = null) {
@@ -1152,16 +1315,23 @@ async function saveContact(e) {
     }
 }
 
+function confirmDeleteContact() {
+    if (!state.editingContact) return;
+    showConfirm('Slett kontakt?', `Er du sikker på at du vil slette "${state.editingContact.name}"?`, deleteContact, '🗑️');
+}
+
 async function deleteContact() {
     if (!state.editingContact) return;
     
-    showConfirm('Slett kontakt?', `Er du sikker på at du vil slette "${state.editingContact.name}"?`, async () => {
-        await deleteFromFirestore('contacts', state.editingContact.id);
+    const success = await deleteFromFirestore('contacts', state.editingContact.id);
+    if (success) {
         state.contacts = state.contacts.filter(c => c.id !== state.editingContact.id);
         closeContactModal();
         showToast('Kontakt slettet');
         renderContacts();
-    }, '🗑️');
+    } else {
+        showToast('Kunne ikke slette kontakt', 'error');
+    }
 }
 
 // ===== Checklists =====
@@ -1169,8 +1339,9 @@ function renderChecklists() {
     const list = $('checklistsList');
     if (!list) return;
     
-    // Sort: seasonal first, then custom
     const seasonalOrder = ['var-sjekkliste', 'sommer-sjekkliste', 'host-sjekkliste', 'vinter-sjekkliste'];
+    const currentSeason = getCurrentSeason();
+    
     const sorted = [...state.checklists].sort((a, b) => {
         const aIdx = seasonalOrder.indexOf(a.id);
         const bIdx = seasonalOrder.indexOf(b.id);
@@ -1194,12 +1365,13 @@ function renderChecklists() {
             const done = items.filter(i => i.done).length;
             const pct = items.length ? Math.round(done / items.length * 100) : 0;
             const isSeasonal = seasonalOrder.includes(cl.id);
+            const isCurrentSeason = cl.season === currentSeason.key;
             
             return `
-                <div class="checklist-card ${isSeasonal ? 'seasonal' : ''}" onclick="openChecklist('${cl.id}')">
+                <div class="checklist-card ${isSeasonal ? 'seasonal' : ''} ${isCurrentSeason ? 'current-season' : ''}" onclick="openChecklist('${cl.id}')">
                     <div class="checklist-icon">${cl.icon || '📋'}</div>
                     <div class="checklist-info">
-                        <h3>${escapeHtml(cl.name)} ${isSeasonal ? '<span class="seasonal-badge">Sesong</span>' : ''}</h3>
+                        <h3>${escapeHtml(cl.name)} ${isCurrentSeason ? '<span class="current-badge">Nå</span>' : ''}</h3>
                         <div class="checklist-mini-progress">
                             <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
                             <span>${done}/${items.length}</span>
@@ -1222,7 +1394,6 @@ function openChecklist(checklistId) {
     
     if (title) title.textContent = `${checklist.icon || '📋'} ${checklist.name}`;
     
-    // Hide delete button for seasonal checklists
     const isSeasonal = DEFAULT_CHECKLISTS.some(d => d.id === checklist.id);
     if (deleteBtn) deleteBtn.style.display = isSeasonal ? 'none' : 'flex';
     
@@ -1248,7 +1419,7 @@ function renderChecklistItems() {
         <div class="checklist-item ${item.done ? 'done' : ''}" onclick="toggleChecklistItem(${i})">
             <span class="check-box">${item.done ? '✓' : ''}</span>
             <span class="check-text">${escapeHtml(item.text)}</span>
-            <button class="delete-item-btn" onclick="event.stopPropagation(); deleteChecklistItem(${i})">✕</button>
+            <button class="delete-item-btn" onclick="event.stopPropagation(); confirmDeleteChecklistItem(${i})">✕</button>
         </div>
     `).join('');
 }
@@ -1264,6 +1435,10 @@ async function toggleChecklistItem(index) {
     }
 }
 
+function confirmDeleteChecklistItem(index) {
+    showConfirm('Slett punkt?', 'Er du sikker på at du vil slette dette punktet?', () => deleteChecklistItem(index), '🗑️');
+}
+
 async function deleteChecklistItem(index) {
     if (!state.currentChecklist) return;
     
@@ -1273,6 +1448,7 @@ async function deleteChecklistItem(index) {
     
     await saveToFirestore('checklists', state.currentChecklist.id, { items });
     renderChecklistItems();
+    showToast('Punkt slettet');
 }
 
 async function addChecklistItem() {
@@ -1289,36 +1465,45 @@ async function addChecklistItem() {
     renderChecklistItems();
 }
 
+function confirmResetChecklist() {
+    showConfirm('Tilbakestill?', 'Alle punkter vil bli satt som ikke fullført.', resetChecklist, '🔄');
+}
+
 async function resetChecklist() {
     if (!state.currentChecklist) return;
     
-    showConfirm('Tilbakestill?', 'Alle punkter vil bli satt som ikke fullført.', async () => {
-        const items = (state.currentChecklist.items || []).map(i => ({ ...i, done: false }));
-        state.currentChecklist.items = items;
-        
-        await saveToFirestore('checklists', state.currentChecklist.id, { items });
-        renderChecklistItems();
-        showToast('Sjekkliste tilbakestilt');
-    }, '🔄');
+    const items = (state.currentChecklist.items || []).map(i => ({ ...i, done: false }));
+    state.currentChecklist.items = items;
+    
+    await saveToFirestore('checklists', state.currentChecklist.id, { items });
+    renderChecklistItems();
+    showToast('Sjekkliste tilbakestilt');
 }
 
-function deleteCurrentChecklist() {
+function confirmDeleteChecklist() {
     if (!state.currentChecklist) return;
     
-    // Prevent deleting seasonal checklists
     const isSeasonal = DEFAULT_CHECKLISTS.some(d => d.id === state.currentChecklist.id);
     if (isSeasonal) {
         showToast('Kan ikke slette sesong-sjekklister', 'error');
         return;
     }
     
-    showConfirm('Slett sjekkliste?', `Er du sikker på at du vil slette "${state.currentChecklist.name}"?`, async () => {
-        await deleteFromFirestore('checklists', state.currentChecklist.id);
+    showConfirm('Slett sjekkliste?', `Er du sikker på at du vil slette "${state.currentChecklist.name}"?`, deleteChecklist, '🗑️');
+}
+
+async function deleteChecklist() {
+    if (!state.currentChecklist) return;
+    
+    const success = await deleteFromFirestore('checklists', state.currentChecklist.id);
+    if (success) {
         state.checklists = state.checklists.filter(c => c.id !== state.currentChecklist.id);
         state.currentChecklist = null;
         showToast('Sjekkliste slettet');
         showView('checklistsView');
-    }, '🗑️');
+    } else {
+        showToast('Kunne ikke slette sjekkliste', 'error');
+    }
 }
 
 function openChecklistModal() {
@@ -1507,12 +1692,16 @@ function openSettingsModal() {
     const darkModeCheck = $('settingsDarkMode');
     const notificationsCheck = $('settingsNotifications');
     const fontSizeSelect = $('settingsFontSize');
+    const latInput = $('settingsLatitude');
+    const lonInput = $('settingsLongitude');
     
     if (farmNameInput) farmNameInput.value = state.settings?.farmName || '';
     if (addressInput) addressInput.value = state.settings?.address || '';
     if (darkModeCheck) darkModeCheck.checked = state.settings?.darkMode || false;
     if (notificationsCheck) notificationsCheck.checked = state.settings?.notifications !== false;
     if (fontSizeSelect) fontSizeSelect.value = state.settings?.fontSize || 'normal';
+    if (latInput) latInput.value = state.settings?.latitude || '60.39';
+    if (lonInput) lonInput.value = state.settings?.longitude || '5.32';
     
     if (modal) modal.classList.add('active');
 }
@@ -1522,13 +1711,40 @@ function closeSettingsModal() {
     if (modal) modal.classList.remove('active');
 }
 
+function getGeoLocation() {
+    if (!navigator.geolocation) {
+        showToast('Geolokasjon støttes ikke', 'error');
+        return;
+    }
+    
+    showToast('Henter posisjon...');
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const latInput = $('settingsLatitude');
+            const lonInput = $('settingsLongitude');
+            
+            if (latInput) latInput.value = position.coords.latitude.toFixed(4);
+            if (lonInput) lonInput.value = position.coords.longitude.toFixed(4);
+            
+            showToast('Posisjon hentet ✓');
+        },
+        (error) => {
+            showToast('Kunne ikke hente posisjon', 'error');
+        }
+    );
+}
+
 async function saveSettings() {
     const settings = {
         farmName: $('settingsFarmName')?.value?.trim() || '',
         address: $('settingsAddress')?.value?.trim() || '',
         darkMode: $('settingsDarkMode')?.checked || false,
         notifications: $('settingsNotifications')?.checked !== false,
-        fontSize: $('settingsFontSize')?.value || 'normal'
+        fontSize: $('settingsFontSize')?.value || 'normal',
+        latitude: parseFloat($('settingsLatitude')?.value) || 60.39,
+        longitude: parseFloat($('settingsLongitude')?.value) || 5.32,
+        lastSeasonReset: state.settings.lastSeasonReset
     };
     
     state.settings = settings;
@@ -1541,49 +1757,52 @@ async function saveSettings() {
         applySettings();
         closeSettingsModal();
         showToast('Innstillinger lagret ✓');
+        
+        fetchWeather();
     } catch (error) {
         showToast('Kunne ikke lagre innstillinger', 'error');
     }
 }
 
-function clearAllData() {
-    showConfirm('Slett all data?', 'Dette kan ikke angres! Alle artikler, kontakter og sjekklister vil bli slettet.', async () => {
-        try {
-            // Delete all collections
-            for (const article of state.articles) {
-                await deleteFromFirestore('articles', article.id);
-            }
-            for (const contact of state.contacts) {
-                await deleteFromFirestore('contacts', contact.id);
-            }
-            for (const checklist of state.checklists) {
+function confirmClearAllData() {
+    showConfirm('Slett all data?', 'Dette kan ikke angres! Alle artikler, kontakter og sjekklister vil bli slettet.', clearAllData, '⚠️');
+}
+
+async function clearAllData() {
+    try {
+        for (const article of state.articles) {
+            await deleteFromFirestore('articles', article.id);
+        }
+        for (const contact of state.contacts) {
+            await deleteFromFirestore('contacts', contact.id);
+        }
+        for (const checklist of state.checklists) {
+            if (!DEFAULT_CHECKLISTS.some(d => d.id === checklist.id)) {
                 await deleteFromFirestore('checklists', checklist.id);
             }
-            for (const category of state.categories) {
-                if (!DEFAULT_CATEGORIES.some(d => d.id === category.id)) {
-                    await deleteFromFirestore('categories', category.id);
-                }
-            }
-            
-            state.articles = [];
-            state.contacts = [];
-            state.checklists = [];
-            state.categories = [...DEFAULT_CATEGORIES];
-            state.recentArticles = [];
-            
-            // Re-add seasonal checklists
-            for (const checklist of DEFAULT_CHECKLISTS) {
-                await saveToFirestore('checklists', checklist.id, checklist);
-                state.checklists.push(checklist);
-            }
-            
-            closeSettingsModal();
-            showToast('Data slettet');
-            renderDashboard();
-        } catch (error) {
-            showToast('Kunne ikke slette data', 'error');
         }
-    }, '⚠️');
+        for (const category of state.categories) {
+            if (!DEFAULT_CATEGORIES.some(d => d.id === category.id)) {
+                await deleteFromFirestore('categories', category.id);
+            }
+        }
+        
+        state.articles = [];
+        state.contacts = [];
+        state.checklists = [...DEFAULT_CHECKLISTS];
+        state.categories = [...DEFAULT_CATEGORIES];
+        state.recentArticles = [];
+        
+        for (const checklist of DEFAULT_CHECKLISTS) {
+            await saveToFirestore('checklists', checklist.id, checklist);
+        }
+        
+        closeSettingsModal();
+        showToast('Data slettet');
+        renderDashboard();
+    } catch (error) {
+        showToast('Kunne ikke slette data', 'error');
+    }
 }
 
 // ===== Sync/Export/Import =====
@@ -1643,7 +1862,6 @@ function importData() {
             }
             
             showConfirm('Importer data?', 'Eksisterende data vil bli overskrevet.', async () => {
-                // Save all data to Firestore
                 for (const cat of data.categories) {
                     await saveToFirestore('categories', cat.id, cat);
                 }
@@ -1702,35 +1920,34 @@ function closeLightbox() {
 }
 
 // ===== Confirm Modal =====
-let confirmCallback = null;
+let pendingConfirmAction = null;
 
 function showConfirm(title, message, callback, icon = '⚠️') {
     const modal = $('confirmModal');
     const iconEl = $('confirmIcon');
     const titleEl = $('confirmTitle');
     const messageEl = $('confirmMessage');
-    const okBtn = $('confirmOk');
     
     if (iconEl) iconEl.textContent = icon;
     if (titleEl) titleEl.textContent = title;
     if (messageEl) messageEl.textContent = message;
     
-    confirmCallback = callback;
-    
-    if (okBtn) {
-        okBtn.onclick = () => {
-            closeConfirmModal();
-            if (confirmCallback) confirmCallback();
-        };
-    }
+    pendingConfirmAction = callback;
     
     if (modal) modal.classList.add('active');
+}
+
+function executeConfirm() {
+    closeConfirmModal();
+    if (pendingConfirmAction) {
+        pendingConfirmAction();
+        pendingConfirmAction = null;
+    }
 }
 
 function closeConfirmModal() {
     const modal = $('confirmModal');
     if (modal) modal.classList.remove('active');
-    confirmCallback = null;
 }
 
 // ===== Toast =====
@@ -1749,9 +1966,10 @@ function showToast(message, type = 'success') {
 // ===== Close All Modals =====
 function closeAllModals() {
     $$('.modal').forEach(m => m.classList.remove('active'));
+    pendingConfirmAction = null;
 }
 
-// ===== Global Functions (for onclick handlers) =====
+// ===== Global Functions =====
 window.openArticle = openArticle;
 window.openCategory = openCategory;
 window.openArticleModal = openArticleModal;
@@ -1761,12 +1979,11 @@ window.openChecklist = openChecklist;
 window.openLightbox = openLightbox;
 window.removeImage = removeImage;
 window.selectEmoji = selectEmoji;
-window.handleDeleteCategory = handleDeleteCategory;
+window.confirmDeleteCategory = confirmDeleteCategory;
 window.toggleChecklistItem = toggleChecklistItem;
-window.deleteChecklistItem = deleteChecklistItem;
+window.confirmDeleteChecklistItem = confirmDeleteChecklistItem;
 window.openSettingsModal = openSettingsModal;
 window.editContact = editContact;
-window.deleteContact = deleteContact;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', () => {
