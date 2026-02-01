@@ -2051,6 +2051,19 @@ async function submitFeedback(e) {
     }
     
     try {
+        // Save to Firestore for admin panel (at root level, not user-specific)
+        if (state.user) {
+            await db.collection('feedback').add({
+                userId: state.user.uid,
+                userEmail: state.user.email,
+                userName: state.user.displayName || 'Anonym',
+                subject: subject,
+                message: message,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'new'
+            });
+        }
+        
         // Send to Formspree
         const response = await fetch('https://formspree.io/f/xrelqova', {
             method: 'POST',
@@ -2064,19 +2077,6 @@ async function submitFeedback(e) {
                 name: state.user?.displayName || 'Anonym bruker'
             })
         });
-        
-        // Also save to Firestore for admin panel
-        if (state.user) {
-            await saveToFirestore('feedback', null, {
-                userId: state.user.uid,
-                userEmail: state.user.email,
-                userName: state.user.displayName || 'Anonym',
-                subject: subject,
-                message: message,
-                createdAt: new Date(),
-                status: 'new'
-            });
-        }
         
         if (response.ok) {
             showToast('Takk for tilbakemeldingen! 💚');
