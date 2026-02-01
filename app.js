@@ -23,7 +23,8 @@ const db = firebase.firestore();
 
 // Configure Firestore with caching
 db.settings({
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+    merge: true
 });
 
 // ===== Default Data =====
@@ -95,15 +96,24 @@ async function loadCollection(collection) {
 }
 
 // ===== Auth Functions =====
+let isLoggingIn = false; // Prevent multiple login attempts
+
 function setupAuth() {
     // Login button
     on('googleLoginBtn', 'click', async () => {
+        if (isLoggingIn) return; // Prevent multiple clicks
+        isLoggingIn = true;
+        
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
             await auth.signInWithPopup(provider);
         } catch (error) {
-            console.error('Login error:', error);
-            showToast('Innlogging feilet: ' + error.message, 'error');
+            console.error('Login error:', error.code);
+            if (error.code !== 'auth/cancelled-popup-request') {
+                showToast('Innlogging feilet: ' + error.message, 'error');
+            }
+        } finally {
+            isLoggingIn = false;
         }
     });
 
