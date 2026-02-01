@@ -693,6 +693,10 @@ function setupEventListeners() {
     
     on('closeAboutModal', 'click', closeAboutModal);
     
+    on('menuFeedback', 'click', openFeedbackModal);
+    on('closeFeedbackModal', 'click', closeFeedbackModal);
+    on('feedbackForm', 'submit', submitFeedback);
+    
     on('confirmCancel', 'click', closeConfirmModal);
     on('confirmOk', 'click', executeConfirm);
     
@@ -2004,6 +2008,62 @@ function closeAboutModal() {
     }
 }
 
+// ===== Feedback Modal =====
+function openFeedbackModal() {
+    const modal = $('feedbackModal');
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+    closeMenu();
+}
+
+function closeFeedbackModal() {
+    const modal = $('feedbackModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+    const form = $('feedbackForm');
+    if (form) form.reset();
+}
+
+async function submitFeedback(e) {
+    e.preventDefault();
+    
+    if (!state.user) {
+        showToast('Du må være logget inn', 'error');
+        return;
+    }
+    
+    const subject = $('feedbackSubject')?.value?.trim() || '';
+    const message = $('feedbackMessage')?.value?.trim() || '';
+    
+    if (!subject || !message) {
+        showToast('Fyll ut alle felt', 'error');
+        return;
+    }
+    
+    try {
+        const feedback = {
+            userId: state.user.uid,
+            userEmail: state.user.email,
+            userName: state.user.displayName || 'Anonym',
+            subject,
+            message,
+            createdAt: new Date(),
+            status: 'new'
+        };
+        
+        await saveToFirestore('feedback', null, feedback);
+        showToast('Takk for tilbakemeldingen! 💚');
+        closeFeedbackModal();
+    } catch (error) {
+        console.error('Feedback error:', error);
+        showToast('Kunne ikke sende tilbakemelding', 'error');
+    }
+}
+
 // ===== Lightbox =====
 function openLightbox(src) {
     const lightbox = $('lightbox');
@@ -2091,6 +2151,8 @@ window.toggleChecklistItem = toggleChecklistItem;
 window.confirmDeleteChecklistItem = confirmDeleteChecklistItem;
 window.openSettingsModal = openSettingsModal;
 window.editContact = editContact;
+window.openFeedbackModal = openFeedbackModal;
+window.closeFeedbackModal = closeFeedbackModal;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', async () => {
