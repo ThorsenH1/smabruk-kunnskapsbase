@@ -1,0 +1,39 @@
+type Organization @table {
+  name: String!
+  createdAt: Timestamp!
+  description: String
+  contactEmail: String
+}
+
+type User @table {
+  displayName: String!
+  email: String!
+  role: String!
+  createdAt: Timestamp!
+  photoUrl: String
+}
+
+type FormTemplate @table {
+  organization: Organization!
+  name: String!
+  fields: String! # Using String to represent JSON or structured array of field definitions
+  createdAt: Timestamp!
+  description: String
+}
+
+type FormRequest @table {
+  organization: Organization!
+  parent: User!
+  formTemplate: FormTemplate!
+  status: String!
+  createdAt: Timestamp!
+  dueDate: Date
+  submittedAt: Timestamp
+}
+
+type FormData @table {
+  formRequest: FormRequest!
+  submittedData: String! # Using String to represent JSON object mapping field names to values
+  createdAt: Timestamp!
+  updatedAt: Timestamp
+}
