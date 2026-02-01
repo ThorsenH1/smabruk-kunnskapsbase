@@ -1037,7 +1037,10 @@ function openArticleModal(article = null) {
 
 function closeArticleModal() {
     const modal = $('articleModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
     state.editingArticle = null;
     state.tempImages = [];
 }
@@ -1150,7 +1153,10 @@ function openCategoryModal() {
 
 function closeCategoryModal() {
     const modal = $('categoryModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 function renderCategoryList() {
@@ -1338,7 +1344,10 @@ function openContactModal(contact = null) {
 
 function closeContactModal() {
     const modal = $('contactModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
     state.editingContact = null;
 }
 
@@ -1582,7 +1591,10 @@ function openChecklistModal() {
 
 function closeChecklistModal() {
     const modal = $('checklistModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 async function saveChecklist(e) {
@@ -1892,7 +1904,10 @@ function openSyncModal() {
 
 function closeSyncModal() {
     const modal = $('syncModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 function exportData() {
@@ -1977,7 +1992,10 @@ function openAboutModal() {
 
 function closeAboutModal() {
     const modal = $('aboutModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 // ===== Lightbox =====
@@ -2026,7 +2044,10 @@ function executeConfirm() {
 
 function closeConfirmModal() {
     const modal = $('confirmModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 // ===== Toast =====
