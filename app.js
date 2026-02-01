@@ -21,9 +21,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Enable offline persistence
-db.enablePersistence().catch(err => {
-    console.log('Offline persistence error:', err.code);
+// Configure Firestore with caching
+db.settings({
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
 });
 
 // ===== Default Data =====
@@ -152,34 +152,42 @@ async function initApp() {
         }
         
     } catch (error) {
-        console.error('Init error:', error);
-        showToast('Feil ved oppstart');
+        console.error('Init error:', error.message);
+        $('splashScreen').classList.add('hidden');
+        $('mainApp').classList.remove('hidden');
+        showToast(`Initialisering feilet: ${error.message}`);
     }
 }
 
 async function loadAllData() {
-    // Load categories
-    state.categories = await loadCollection('categories');
-    if (state.categories.length === 0) {
-        // Initialize with default categories
-        for (const cat of DEFAULT_CATEGORIES) {
-            await saveToFirestore('categories', cat.id, cat);
-        }
-        state.categories = DEFAULT_CATEGORIES;
-    }
-    
-    state.articles = await loadCollection('articles');
-    state.contacts = await loadCollection('contacts');
-    state.checklists = await loadCollection('checklists');
-    
-    // Load settings
     try {
-        const settingsDoc = await db.collection('users').doc(state.user.uid).get();
-        state.settings = settingsDoc.data()?.settings || {};
-        state.recentArticles = settingsDoc.data()?.recentArticles || [];
-    } catch(e) {
-        state.settings = {};
-        state.recentArticles = [];
+        // Load categories
+        state.categories = await loadCollection('categories');
+        if (state.categories.length === 0) {
+            // Initialize with default categories
+            for (const cat of DEFAULT_CATEGORIES) {
+                await saveToFirestore('categories', cat.id, cat);
+            }
+            state.categories = DEFAULT_CATEGORIES;
+        }
+        
+        state.articles = await loadCollection('articles');
+        state.contacts = await loadCollection('contacts');
+        state.checklists = await loadCollection('checklists');
+        
+        // Load settings
+        try {
+            const settingsDoc = await db.collection('users').doc(state.user.uid).get();
+            state.settings = settingsDoc.data()?.settings || {};
+            state.recentArticles = settingsDoc.data()?.recentArticles || [];
+        } catch(e) {
+            console.warn('Could not load user settings:', e.code);
+            state.settings = {};
+            state.recentArticles = [];
+        }
+    } catch (error) {
+        console.error('Load data error:', error.code, error.message);
+        throw new Error('Kunne ikke laste data fra database. Sjekk Firestore permissions.');
     }
 }
 
