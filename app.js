@@ -1029,7 +1029,10 @@ function openArticleModal(article = null) {
     
     renderImagePreviews();
     
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeArticleModal() {
@@ -1137,7 +1140,10 @@ async function saveArticle(e) {
 // ===== Category Modal =====
 function openCategoryModal() {
     const modal = $('categoryModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
     renderCategoryList();
     renderEmojiGrid();
 }
@@ -1324,7 +1330,10 @@ function openContactModal(contact = null) {
     if (emergencyCheck) emergencyCheck.checked = contact?.emergency || false;
     if (deleteBtn) deleteBtn.style.display = contact ? 'block' : 'none';
     
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeContactModal() {
@@ -1565,7 +1574,10 @@ function openChecklistModal() {
     
     if (nameInput) nameInput.value = '';
     if (iconSelect) iconSelect.value = '📋';
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeChecklistModal() {
@@ -1755,12 +1767,18 @@ function openSettingsModal() {
     if (latInput) latInput.value = state.settings?.latitude || '60.39';
     if (lonInput) lonInput.value = state.settings?.longitude || '5.32';
     
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeSettingsModal() {
     const modal = $('settingsModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 function getGeoLocation() {
@@ -1866,7 +1884,10 @@ function openSyncModal() {
         userEmail.textContent = state.user.email;
     }
     
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeSyncModal() {
@@ -1948,7 +1969,10 @@ function importData() {
 // ===== About Modal =====
 function openAboutModal() {
     const modal = $('aboutModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeAboutModal() {
@@ -1986,7 +2010,10 @@ function showConfirm(title, message, callback, icon = '⚠️') {
     
     pendingConfirmAction = callback;
     
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function executeConfirm() {
@@ -2019,6 +2046,7 @@ function showToast(message, type = 'success') {
 function closeAllModals() {
     $$('.modal').forEach(m => m.classList.remove('active'));
     pendingConfirmAction = null;
+    document.body.style.overflow = '';
 }
 
 // ===== Global Functions =====
