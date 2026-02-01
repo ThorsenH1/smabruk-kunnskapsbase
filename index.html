@@ -297,6 +297,7 @@
             <hr class="menu-divider">
             <button id="menuAbout" class="menu-item">ℹ️ Om appen</button>
             <button id="menuFeedback" class="menu-item">💬 Tilbakemelding</button>
+            <button id="menuAdminPanel" class="menu-item" style="display:none;">⚙️ Admin Panel</button>
         </div>
         <div class="menu-footer">
             <p>Versjon 4.0.0</p>
@@ -594,6 +595,24 @@
                     <button type="submit" class="btn-primary">Send</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminPanelModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>⚙️ Admin Panel</h2>
+                <button id="closeAdminPanelModal" class="btn-close">✕</button>
+            </div>
+            <div class="modal-form">
+                <div class="admin-section">
+                    <h3>💬 Tilbakemeldinger</h3>
+                    <div id="feedbackList" class="feedback-list">
+                        <p class="empty-state">Laster tilbakemeldinger...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

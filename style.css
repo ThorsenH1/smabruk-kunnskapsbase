@@ -1829,6 +1829,90 @@ body.font-large {
     flex: 1;
 }
 
+/* === Feedback & Admin Panel === */
+.feedback-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feedback-item {
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--accent);
+}
+
+.feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.feedback-header h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.feedback-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.feedback-user {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 4px 0 8px 0;
+}
+
+.feedback-message {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.admin-section {
+    padding: 12px 0;
+}
+
+.admin-section h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.125rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 12px;
+}
+
+.error {
+    text-align: center;
+    color: var(--danger);
+    padding: 12px;
+}
+
+body.dark-mode .feedback-item {
+    background: var(--bg-card);
+}
+
 /* === Toast === */
 .toast {
     position: fixed;

@@ -371,6 +371,7 @@ async function initApp() {
         fetchWeather();
         renderDashboard();
         applySettings();
+        updateAdminMenuVisibility();
         
         setTimeout(() => {
             if (splash) splash.classList.add('hidden');
@@ -388,6 +389,13 @@ async function initApp() {
         const mainApp = $('mainApp');
         if (mainApp) mainApp.classList.remove('hidden');
         showToast('Kunne ikke laste data', 'error');
+    }
+}
+
+function updateAdminMenuVisibility() {
+    const adminBtn = $('menuAdminPanel');
+    if (adminBtn && state.user?.email === 'halvor.thorsenh@gmail.com') {
+        adminBtn.style.display = 'block';
     }
 }
 
@@ -696,6 +704,9 @@ function setupEventListeners() {
     on('menuFeedback', 'click', openFeedbackModal);
     on('closeFeedbackModal', 'click', closeFeedbackModal);
     on('feedbackForm', 'submit', submitFeedback);
+    
+    on('menuAdminPanel', 'click', openAdminPanel);
+    on('closeAdminPanelModal', 'click', closeAdminPanel);
     
     on('confirmCancel', 'click', closeConfirmModal);
     on('confirmOk', 'click', executeConfirm);
@@ -2040,6 +2051,7 @@ async function submitFeedback(e) {
     }
     
     try {
+        // Send to Formspree
         const response = await fetch('https://formspree.io/f/xrelqova', {
             method: 'POST',
             headers: {
@@ -2053,6 +2065,19 @@ async function submitFeedback(e) {
             })
         });
         
+        // Also save to Firestore for admin panel
+        if (state.user) {
+            await saveToFirestore('feedback', null, {
+                userId: state.user.uid,
+                userEmail: state.user.email,
+                userName: state.user.displayName || 'Anonym',
+                subject: subject,
+                message: message,
+                createdAt: new Date(),
+                status: 'new'
+            });
+        }
+        
         if (response.ok) {
             showToast('Takk for tilbakemeldingen! 💚');
             closeFeedbackModal();
@@ -2062,6 +2087,63 @@ async function submitFeedback(e) {
     } catch (error) {
         console.error('Feedback error:', error);
         showToast('Kunne ikke sende tilbakemelding', 'error');
+    }
+}
+
+// ===== Admin Panel =====
+function openAdminPanel() {
+    const modal = $('adminPanelModal');
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+    loadFeedback();
+    closeMenu();
+}
+
+function closeAdminPanel() {
+    const modal = $('adminPanelModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+async function loadFeedback() {
+    const list = $('feedbackList');
+    if (!list) return;
+    
+    try {
+        list.innerHTML = '<p class="loading">Laster tilbakemeldinger...</p>';
+        
+        const feedback = await db.collection('feedback')
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        if (feedback.empty) {
+            list.innerHTML = '<p class="empty-state">Ingen tilbakemeldinger ennå</p>';
+            return;
+        }
+        
+        list.innerHTML = feedback.docs.map(doc => {
+            const data = doc.data();
+            const date = data.createdAt?.toDate?.() || new Date();
+            const dateStr = date.toLocaleString('no-NO');
+            
+            return `
+                <div class="feedback-item">
+                    <div class="feedback-header">
+                        <h4>${escapeHtml(data.subject)}</h4>
+                        <span class="feedback-date">${dateStr}</span>
+                    </div>
+                    <p class="feedback-user"><strong>${escapeHtml(data.userName)}</strong> (${escapeHtml(data.userEmail)})</p>
+                    <p class="feedback-message">${escapeHtml(data.message).replace(/\n/g, '<br>')}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading feedback:', error);
+        list.innerHTML = '<p class="error">Kunne ikke laste tilbakemeldinger</p>';
     }
 }
 
@@ -2154,6 +2236,8 @@ window.openSettingsModal = openSettingsModal;
 window.editContact = editContact;
 window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
+window.openAdminPanel = openAdminPanel;
+window.closeAdminPanel = closeAdminPanel;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', async () => {
