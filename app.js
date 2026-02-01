@@ -693,6 +693,10 @@ function setupEventListeners() {
     
     on('closeAboutModal', 'click', closeAboutModal);
     
+    on('menuFeedback', 'click', openFeedbackModal);
+    on('closeFeedbackModal', 'click', closeFeedbackModal);
+    on('feedbackForm', 'submit', submitFeedback);
+    
     on('confirmCancel', 'click', closeConfirmModal);
     on('confirmOk', 'click', executeConfirm);
     
@@ -2004,6 +2008,63 @@ function closeAboutModal() {
     }
 }
 
+// ===== Feedback Modal =====
+function openFeedbackModal() {
+    const modal = $('feedbackModal');
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+    closeMenu();
+}
+
+function closeFeedbackModal() {
+    const modal = $('feedbackModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+    const form = $('feedbackForm');
+    if (form) form.reset();
+}
+
+async function submitFeedback(e) {
+    e.preventDefault();
+    
+    const subject = $('feedbackSubject')?.value?.trim() || '';
+    const message = $('feedbackMessage')?.value?.trim() || '';
+    
+    if (!subject || !message) {
+        showToast('Fyll ut alle felt', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('https://formspree.io/f/xrelqova', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                subject: subject,
+                message: message,
+                email: state.user?.email || 'anonym@bruker.no',
+                name: state.user?.displayName || 'Anonym bruker'
+            })
+        });
+        
+        if (response.ok) {
+            showToast('Takk for tilbakemeldingen! 💚');
+            closeFeedbackModal();
+        } else {
+            showToast('Kunne ikke sende tilbakemelding', 'error');
+        }
+    } catch (error) {
+        console.error('Feedback error:', error);
+        showToast('Kunne ikke sende tilbakemelding', 'error');
+    }
+}
+
 // ===== Lightbox =====
 function openLightbox(src) {
     const lightbox = $('lightbox');
@@ -2091,6 +2152,8 @@ window.toggleChecklistItem = toggleChecklistItem;
 window.confirmDeleteChecklistItem = confirmDeleteChecklistItem;
 window.openSettingsModal = openSettingsModal;
 window.editContact = editContact;
+window.openFeedbackModal = openFeedbackModal;
+window.closeFeedbackModal = closeFeedbackModal;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', async () => {

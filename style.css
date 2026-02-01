@@ -1265,6 +1265,10 @@ a {
     max-width: 360px;
 }
 
+.modal-content.medium {
+    max-width: 450px;
+}
+
 .modal-content.large {
     max-height: 95vh;
 }

@@ -296,6 +296,7 @@
             <button id="menuImport" class="menu-item">📥 Importer data</button>
             <hr class="menu-divider">
             <button id="menuAbout" class="menu-item">ℹ️ Om appen</button>
+            <button id="menuFeedback" class="menu-item">💬 Tilbakemelding</button>
         </div>
         <div class="menu-footer">
             <p>Versjon 4.0.0</p>
@@ -569,6 +570,30 @@
                     <p>🔒 Privat og sikker</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content medium">
+            <div class="modal-header">
+                <h2>💬 Tilbakemelding</h2>
+                <button id="closeFeedbackModal" class="btn-close">✕</button>
+            </div>
+            <form id="feedbackForm" class="modal-form">
+                <div class="form-group">
+                    <label for="feedbackSubject">Emne *</label>
+                    <input type="text" id="feedbackSubject" required placeholder="F.eks. Bug, feature request, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="feedbackMessage">Melding *</label>
+                    <textarea id="feedbackMessage" required placeholder="Hva vil du si?" rows="5"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeFeedbackModal()">Avbryt</button>
+                    <button type="submit" class="btn-primary">Send</button>
+                </div>
+            </form>
         </div>
     </div>
 
