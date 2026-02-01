@@ -1,10 +1,10 @@
-// Service Worker for Småbruk Kunnskapsbase v4.0
-const CACHE_NAME = 'smabruk-v4';
+// Service Worker for Småbruk Kunnskapsbase v4.1
+const CACHE_NAME = 'smabruk-v4.1';
 const ASSETS = [
     './',
     './index.html',
-    './style.css?v=4.0',
-    './app.js?v=4.0',
+    './style.css?v=4.1',
+    './app.js?v=4.1',
     './manifest.json',
     './icons/icon-192.svg',
     './icons/icon-512.svg'

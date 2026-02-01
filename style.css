@@ -1553,6 +1553,87 @@ a {
     padding: 20px;
 }
 
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h3 {
+    font-size: 0.9375rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-group label:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #ccc;
+    border-radius: 28px;
+    transition: var(--transition);
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+}
+
+.full-width {
+    width: 100%;
+}
+
+.modal-content.large {
+    max-width: 500px;
+}
+
 .settings-divider {
     margin: 24px 0;
     border: none;
@@ -1568,8 +1649,72 @@ a {
 
 .danger-zone h3 {
     color: var(--danger);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     font-size: 0.9375rem;
+}
+
+.danger-hint {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    --bg: #1a1a1a;
+    --bg-card: #2a2a2a;
+    --text: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --border: #404040;
+}
+
+body.dark-mode .header {
+    background: #2a2a2a;
+}
+
+body.dark-mode .modal-content {
+    background: #2a2a2a;
+}
+
+body.dark-mode .search-bar {
+    background: #333;
+}
+
+body.dark-mode .search-bar input {
+    color: white;
+}
+
+body.dark-mode .category-card,
+body.dark-mode .article-card,
+body.dark-mode .contact-card,
+body.dark-mode .checklist-card {
+    background: #2a2a2a;
+    border-color: #404040;
+}
+
+body.dark-mode .danger-zone {
+    background: #3a2020;
+    border-color: #5a3030;
+}
+
+/* Font Size Adjustments */
+body.font-small {
+    font-size: 14px;
+}
+
+body.font-large {
+    font-size: 18px;
+}
+
+/* Seasonal Checklist Badge */
+.seasonal-badge {
+    font-size: 0.625rem;
+    background: var(--accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 4px;
 }
 
 /* === About Modal === */

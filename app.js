@@ -1,10 +1,10 @@
 // ==========================================
-// SMÅBRUK KUNNSKAPSBASE APP v4.0
+// SMÅBRUK KUNNSKAPSBASE APP v4.1
 // Firebase-basert med Google Auth
 // Komplett, debugget og profesjonell
 // ==========================================
 
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.1.0';
 
 // ===== Firebase Configuration =====
 const firebaseConfig = {
@@ -38,6 +38,86 @@ const DEFAULT_CATEGORIES = [
     { id: 'annet', name: 'Annet', icon: '📝' }
 ];
 
+const DEFAULT_CHECKLISTS = [
+    {
+        id: 'var-sjekkliste',
+        name: 'Vårklargjøring',
+        icon: '🌸',
+        items: [
+            { text: 'Sjekk taket for vinterskader', done: false },
+            { text: 'Rens takrenner og nedløp', done: false },
+            { text: 'Inspiser grunnmur for sprekker', done: false },
+            { text: 'Service på gressklipper', done: false },
+            { text: 'Klargjør hageredskaper', done: false },
+            { text: 'Så frø innendørs', done: false },
+            { text: 'Beskjær frukttrær', done: false },
+            { text: 'Sjekk gjerder og porter', done: false },
+            { text: 'Tøm og rens vannrør utendørs', done: false },
+            { text: 'Sjekk dreneringen rundt huset', done: false },
+            { text: 'Forbered beiter for beitesesong', done: false },
+            { text: 'Bestill såkorn og settepoteter', done: false }
+        ]
+    },
+    {
+        id: 'sommer-sjekkliste',
+        name: 'Sommeroppgaver',
+        icon: '☀️',
+        items: [
+            { text: 'Vann hage regelmessig', done: false },
+            { text: 'Slå gress ukentlig', done: false },
+            { text: 'Luke ugress', done: false },
+            { text: 'Høst grønnsaker og bær', done: false },
+            { text: 'Male og vedlikeholde bygninger', done: false },
+            { text: 'Sjekk vannkvalitet i brønn', done: false },
+            { text: 'Flytt dyr til sommerbeite', done: false },
+            { text: 'Slå og tørk høy', done: false },
+            { text: 'Vedlikehold stier og veier', done: false },
+            { text: 'Sjekk elektrisk gjerde', done: false },
+            { text: 'Rens og vedlikehold utebod', done: false },
+            { text: 'Konserver og sylte avlinger', done: false }
+        ]
+    },
+    {
+        id: 'host-sjekkliste',
+        name: 'Høstklargjøring',
+        icon: '🍂',
+        items: [
+            { text: 'Høst inn poteter og rotfrukter', done: false },
+            { text: 'Rydd hagen for vinteren', done: false },
+            { text: 'Plante løk og stauder', done: false },
+            { text: 'Rake løv fra plen', done: false },
+            { text: 'Dekk til ømfintlige planter', done: false },
+            { text: 'Hent inn dyr fra beite', done: false },
+            { text: 'Fyll opp vedlageret', done: false },
+            { text: 'Service på snøfreser', done: false },
+            { text: 'Tøm vannsystemer utendørs', done: false },
+            { text: 'Sjekk isolasjon i bygninger', done: false },
+            { text: 'Lagre hagemøbler inne', done: false },
+            { text: 'Rens og lagre hageredskaper', done: false },
+            { text: 'Bestill strøsand/salt', done: false }
+        ]
+    },
+    {
+        id: 'vinter-sjekkliste',
+        name: 'Vinteroppgaver',
+        icon: '❄️',
+        items: [
+            { text: 'Måk snø fra tak ved behov', done: false },
+            { text: 'Hold innkjørsel og stier ryddet', done: false },
+            { text: 'Sjekk at vannrør ikke fryser', done: false },
+            { text: 'Fyr i ovnen regelmessig', done: false },
+            { text: 'Sjekk fôrlager for dyr', done: false },
+            { text: 'Gi ekstra fôr til dyr i kulde', done: false },
+            { text: 'Sjekk at ventilasjonen fungerer', done: false },
+            { text: 'Hold vanntilgang åpen for dyr', done: false },
+            { text: 'Vedlikehold verktøy og maskiner', done: false },
+            { text: 'Planlegg neste års hage', done: false },
+            { text: 'Bestill frø til våren', done: false },
+            { text: 'Sjekk brannslukker og røykvarsler', done: false }
+        ]
+    }
+];
+
 const EMOJIS = ['🔧','🐑','🐔','🐄','🐖','🌱','🌳','🍎','🍓','🥕','🚜','🛠️','🏠','🏚️','🪵','📜','📚','📝','🍲','🥛','🧀','⚡','💧','🔥','❄️','🌤️','🌧️','🐝','🦆','🐕','🐈','🐴','🌻','🌿','🪨','⛏️','🪓','🧱','🏗️','🚿','💡','🔌','📞','🗓️','⭐','❤️','✅','🌸','☀️','🍂','🧹','🪣','🔨','⚙️','🎯'];
 
 // ===== State =====
@@ -47,7 +127,14 @@ const state = {
     articles: [],
     contacts: [],
     checklists: [],
-    settings: {},
+    settings: {
+        farmName: '',
+        address: '',
+        darkMode: false,
+        notifications: true,
+        autoBackup: false,
+        fontSize: 'normal'
+    },
     recentArticles: [],
     currentView: 'dashboardView',
     currentArticle: null,
@@ -98,7 +185,16 @@ async function saveToFirestore(collection, id, data) {
 
 async function deleteFromFirestore(collection, id) {
     const col = userDoc(collection);
-    if (col) await col.doc(id).delete();
+    if (col) {
+        try {
+            await col.doc(id).delete();
+            return true;
+        } catch (e) {
+            console.error('Delete error:', e);
+            return false;
+        }
+    }
+    return false;
 }
 
 async function loadCollection(collection) {
@@ -157,7 +253,7 @@ function setupAuth() {
     });
 }
 
-async function signOut() {
+async function doSignOut() {
     try {
         await auth.signOut();
         state.user = null;
@@ -168,6 +264,8 @@ async function signOut() {
         state.settings = {};
         state.recentArticles = [];
         showToast('Logget ut');
+        // Force reload to reset app state
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         console.error('Logout error:', error);
         showToast('Kunne ikke logge ut', 'error');
@@ -182,8 +280,9 @@ async function initApp() {
     try {
         await loadAllData();
         setupEventListeners();
+        setupProfileButton();
         renderDashboard();
-        updateUserUI();
+        applySettings();
         
         setTimeout(() => {
             if (splash) splash.classList.add('hidden');
@@ -205,58 +304,82 @@ async function initApp() {
 }
 
 async function loadAllData() {
+    // Load categories
     state.categories = await loadCollection('categories');
     
     // Ensure all default categories exist
-    const existingIds = state.categories.map(c => c.id);
+    const existingCatIds = state.categories.map(c => c.id);
     for (const cat of DEFAULT_CATEGORIES) {
-        if (!existingIds.includes(cat.id)) {
+        if (!existingCatIds.includes(cat.id)) {
             await saveToFirestore('categories', cat.id, cat);
             state.categories.push(cat);
         }
     }
     
-    // If no categories at all, add all defaults
-    if (state.categories.length === 0) {
-        for (const cat of DEFAULT_CATEGORIES) {
-            await saveToFirestore('categories', cat.id, cat);
-        }
-        state.categories = [...DEFAULT_CATEGORIES];
-    }
-    
+    // Load articles, contacts, checklists
     state.articles = await loadCollection('articles');
     state.contacts = await loadCollection('contacts');
     state.checklists = await loadCollection('checklists');
     
+    // Ensure seasonal checklists exist
+    const existingChecklistIds = state.checklists.map(c => c.id);
+    for (const checklist of DEFAULT_CHECKLISTS) {
+        if (!existingChecklistIds.includes(checklist.id)) {
+            await saveToFirestore('checklists', checklist.id, checklist);
+            state.checklists.push(checklist);
+        }
+    }
+    
+    // Load settings
     try {
         const userDocRef = db.collection('users').doc(state.user.uid);
         const settingsDoc = await userDocRef.get();
         if (settingsDoc.exists) {
-            state.settings = settingsDoc.data()?.settings || {};
-            state.recentArticles = settingsDoc.data()?.recentArticles || [];
+            const data = settingsDoc.data();
+            state.settings = { ...state.settings, ...(data?.settings || {}) };
+            state.recentArticles = data?.recentArticles || [];
         }
     } catch(e) {
-        state.settings = {};
-        state.recentArticles = [];
+        console.warn('Could not load settings:', e.message);
     }
 }
 
-function updateUserUI() {
+function setupProfileButton() {
     const syncBtn = $('syncBtn');
-    if (syncBtn && state.user?.photoURL) {
-        syncBtn.innerHTML = `<img src="${state.user.photoURL}" class="user-avatar" alt="Profil" style="width:28px;height:28px;border-radius:50%;">`;
-        // Re-attach event listener after innerHTML change
-        syncBtn.onclick = openUserMenu;
+    if (syncBtn) {
+        if (state.user?.photoURL) {
+            syncBtn.innerHTML = `<img src="${state.user.photoURL}" class="user-avatar" alt="Profil" style="width:28px;height:28px;border-radius:50%;">`;
+        }
+        // Always set click handler
+        syncBtn.addEventListener('click', showLogoutDialog);
     }
-    
+}
+
+function showLogoutDialog() {
+    showConfirm('Logg ut?', 'Vil du logge ut av appen?', doSignOut, '👋');
+}
+
+function applySettings() {
+    // Update farm name in header
     const farmName = $('farmName');
     if (farmName && state.settings?.farmName) {
         farmName.textContent = state.settings.farmName;
     }
-}
-
-function openUserMenu() {
-    showConfirm('Logg ut?', 'Vil du logge ut av appen?', () => signOut(), '👋');
+    
+    // Apply dark mode
+    if (state.settings?.darkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    
+    // Apply font size
+    document.body.classList.remove('font-small', 'font-large');
+    if (state.settings?.fontSize === 'small') {
+        document.body.classList.add('font-small');
+    } else if (state.settings?.fontSize === 'large') {
+        document.body.classList.add('font-large');
+    }
 }
 
 // ===== Event Listeners =====
@@ -330,7 +453,6 @@ function setupEventListeners() {
     
     // Emergency view
     on('backFromEmergency', 'click', () => showView('dashboardView'));
-    on('editAddressBtn', 'click', openSettingsModal);
     
     // Favorites view
     on('backFromFavorites', 'click', () => showView('dashboardView'));
@@ -345,6 +467,7 @@ function setupEventListeners() {
     on('menuExport', 'click', () => { closeMenu(); exportData(); });
     on('menuImport', 'click', () => { closeMenu(); importData(); });
     on('menuAbout', 'click', () => { closeMenu(); openAboutModal(); });
+    on('menuLogout', 'click', () => { closeMenu(); showLogoutDialog(); });
     
     // Article modal
     on('closeArticleModal', 'click', closeArticleModal);
@@ -358,7 +481,7 @@ function setupEventListeners() {
     on('closeCategoryModal', 'click', closeCategoryModal);
     on('addCategoryBtn', 'click', addCategory);
     on('selectEmojiBtn', 'click', openEmojiPicker);
-    on('newCategoryName', 'keypress', e => { if (e.key === 'Enter') addCategory(); });
+    on('newCategoryName', 'keypress', e => { if (e.key === 'Enter') { e.preventDefault(); addCategory(); } });
     
     // Contact modal
     on('closeContactModal', 'click', closeContactModal);
@@ -661,7 +784,7 @@ function deleteCurrentArticle() {
 // ===== Article Modal =====
 function openArticleModal(article = null) {
     state.editingArticle = article;
-    state.tempImages = article?.images || [];
+    state.tempImages = article?.images ? [...article.images] : [];
     
     const modal = $('articleModal');
     const title = $('modalTitle');
@@ -669,7 +792,6 @@ function openArticleModal(article = null) {
     const categorySelect = $('articleCategory');
     const tagsInput = $('articleTags');
     const textInput = $('articleText');
-    const previewList = $('imagePreviewList');
     
     if (title) title.textContent = article ? 'Rediger artikkel' : 'Ny artikkel';
     
@@ -765,7 +887,8 @@ async function saveArticle(e) {
         category: categorySelect?.value || '',
         tags: tagsInput?.value?.trim() || '',
         content: textInput?.value?.trim() || '',
-        images: state.tempImages
+        images: state.tempImages,
+        favorite: state.editingArticle?.favorite || false
     };
     
     if (!data.title || !data.category || !data.content) {
@@ -813,14 +936,45 @@ function renderCategoryList() {
     const list = $('manageCategoryList');
     if (!list) return;
     
-    list.innerHTML = state.categories.map(cat => `
-        <div class="category-item">
-            <span class="cat-icon">${cat.icon}</span>
-            <span class="cat-name">${escapeHtml(cat.name)}</span>
-            <span class="cat-count">${state.articles.filter(a => a.category === cat.id).length}</span>
-            <button class="delete-cat-btn" onclick="deleteCategory('${cat.id}')" ${DEFAULT_CATEGORIES.some(d => d.id === cat.id) ? 'disabled title="Standard kategori"' : ''}>✕</button>
-        </div>
-    `).join('');
+    list.innerHTML = state.categories.map(cat => {
+        const count = state.articles.filter(a => a.category === cat.id).length;
+        const isDefault = DEFAULT_CATEGORIES.some(d => d.id === cat.id);
+        
+        return `
+            <div class="category-item">
+                <span class="cat-icon">${cat.icon}</span>
+                <span class="cat-name">${escapeHtml(cat.name)}</span>
+                <span class="cat-count">${count}</span>
+                <button class="delete-cat-btn" onclick="handleDeleteCategory('${cat.id}', ${count}, ${isDefault})" ${isDefault ? 'title="Standard kategori"' : ''}>
+                    ${isDefault ? '🔒' : '✕'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function handleDeleteCategory(categoryId, articleCount, isDefault) {
+    if (isDefault) {
+        showToast('Kan ikke slette standard kategorier', 'error');
+        return;
+    }
+    
+    if (articleCount > 0) {
+        showToast(`Kan ikke slette - ${articleCount} artikler bruker denne kategorien`, 'error');
+        return;
+    }
+    
+    showConfirm('Slett kategori?', 'Er du sikker på at du vil slette denne kategorien?', async () => {
+        const success = await deleteFromFirestore('categories', categoryId);
+        if (success) {
+            state.categories = state.categories.filter(c => c.id !== categoryId);
+            renderCategoryList();
+            renderDashboard();
+            showToast('Kategori slettet ✓');
+        } else {
+            showToast('Kunne ikke slette kategori', 'error');
+        }
+    }, '🗑️');
 }
 
 async function addCategory() {
@@ -835,40 +989,27 @@ async function addCategory() {
         return;
     }
     
-    const id = name.toLowerCase().replace(/[^a-zæøå0-9]/g, '-');
+    const id = name.toLowerCase().replace(/[^a-zæøå0-9]/g, '-').replace(/-+/g, '-');
     
     if (state.categories.some(c => c.id === id)) {
         showToast('Kategori finnes allerede', 'error');
         return;
     }
     
-    const newCat = { id, name, icon };
-    await saveToFirestore('categories', id, newCat);
-    state.categories.push(newCat);
-    
-    if (nameInput) nameInput.value = '';
-    if (emojiBtn) emojiBtn.textContent = '📁';
-    
-    renderCategoryList();
-    renderDashboard();
-    showToast('Kategori lagt til ✓');
-}
-
-async function deleteCategory(categoryId) {
-    const articles = state.articles.filter(a => a.category === categoryId);
-    
-    if (articles.length > 0) {
-        showToast(`Kan ikke slette - ${articles.length} artikler bruker denne kategorien`, 'error');
-        return;
-    }
-    
-    showConfirm('Slett kategori?', 'Er du sikker?', async () => {
-        await deleteFromFirestore('categories', categoryId);
-        state.categories = state.categories.filter(c => c.id !== categoryId);
+    try {
+        const newCat = { id, name, icon };
+        await saveToFirestore('categories', id, newCat);
+        state.categories.push(newCat);
+        
+        if (nameInput) nameInput.value = '';
+        if (emojiBtn) emojiBtn.textContent = '📁';
+        
         renderCategoryList();
         renderDashboard();
-        showToast('Kategori slettet');
-    });
+        showToast('Kategori lagt til ✓');
+    } catch (error) {
+        showToast('Kunne ikke legge til kategori', 'error');
+    }
 }
 
 function openEmojiPicker() {
@@ -927,7 +1068,7 @@ function renderContacts() {
             <div class="contact-group">
                 <h3 class="contact-group-title">${typeNames[type] || type}</h3>
                 ${contacts.map(c => `
-                    <div class="contact-card" onclick="openContactModal(state.contacts.find(x => x.id === '${c.id}'))">
+                    <div class="contact-card" onclick="editContact('${c.id}')">
                         <div class="contact-info">
                             <h4>${escapeHtml(c.name)} ${c.emergency ? '🆘' : ''}</h4>
                             <a href="tel:${c.phone}" class="contact-phone" onclick="event.stopPropagation()">${c.phone}</a>
@@ -941,6 +1082,13 @@ function renderContacts() {
     }
 }
 
+function editContact(contactId) {
+    const contact = state.contacts.find(c => c.id === contactId);
+    if (contact) {
+        openContactModal(contact);
+    }
+}
+
 function openContactModal(contact = null) {
     state.editingContact = contact;
     
@@ -951,6 +1099,7 @@ function openContactModal(contact = null) {
     const categorySelect = $('contactCategory');
     const noteInput = $('contactNote');
     const emergencyCheck = $('contactEmergency');
+    const deleteBtn = $('deleteContactBtn');
     
     if (title) title.textContent = contact ? 'Rediger kontakt' : 'Ny kontakt';
     if (nameInput) nameInput.value = contact?.name || '';
@@ -958,6 +1107,7 @@ function openContactModal(contact = null) {
     if (categorySelect) categorySelect.value = contact?.category || 'annet';
     if (noteInput) noteInput.value = contact?.note || '';
     if (emergencyCheck) emergencyCheck.checked = contact?.emergency || false;
+    if (deleteBtn) deleteBtn.style.display = contact ? 'block' : 'none';
     
     if (modal) modal.classList.add('active');
 }
@@ -1002,12 +1152,35 @@ async function saveContact(e) {
     }
 }
 
+async function deleteContact() {
+    if (!state.editingContact) return;
+    
+    showConfirm('Slett kontakt?', `Er du sikker på at du vil slette "${state.editingContact.name}"?`, async () => {
+        await deleteFromFirestore('contacts', state.editingContact.id);
+        state.contacts = state.contacts.filter(c => c.id !== state.editingContact.id);
+        closeContactModal();
+        showToast('Kontakt slettet');
+        renderContacts();
+    }, '🗑️');
+}
+
 // ===== Checklists =====
 function renderChecklists() {
     const list = $('checklistsList');
     if (!list) return;
     
-    if (state.checklists.length === 0) {
+    // Sort: seasonal first, then custom
+    const seasonalOrder = ['var-sjekkliste', 'sommer-sjekkliste', 'host-sjekkliste', 'vinter-sjekkliste'];
+    const sorted = [...state.checklists].sort((a, b) => {
+        const aIdx = seasonalOrder.indexOf(a.id);
+        const bIdx = seasonalOrder.indexOf(b.id);
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        return (a.name || '').localeCompare(b.name || '', 'no');
+    });
+    
+    if (sorted.length === 0) {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">✅</div>
@@ -1016,16 +1189,17 @@ function renderChecklists() {
             </div>
         `;
     } else {
-        list.innerHTML = state.checklists.map(cl => {
+        list.innerHTML = sorted.map(cl => {
             const items = cl.items || [];
             const done = items.filter(i => i.done).length;
             const pct = items.length ? Math.round(done / items.length * 100) : 0;
+            const isSeasonal = seasonalOrder.includes(cl.id);
             
             return `
-                <div class="checklist-card" onclick="openChecklist('${cl.id}')">
+                <div class="checklist-card ${isSeasonal ? 'seasonal' : ''}" onclick="openChecklist('${cl.id}')">
                     <div class="checklist-icon">${cl.icon || '📋'}</div>
                     <div class="checklist-info">
-                        <h3>${escapeHtml(cl.name)}</h3>
+                        <h3>${escapeHtml(cl.name)} ${isSeasonal ? '<span class="seasonal-badge">Sesong</span>' : ''}</h3>
                         <div class="checklist-mini-progress">
                             <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
                             <span>${done}/${items.length}</span>
@@ -1044,7 +1218,13 @@ function openChecklist(checklistId) {
     state.currentChecklist = checklist;
     
     const title = $('checklistTitle');
+    const deleteBtn = $('deleteChecklistBtn');
+    
     if (title) title.textContent = `${checklist.icon || '📋'} ${checklist.name}`;
+    
+    // Hide delete button for seasonal checklists
+    const isSeasonal = DEFAULT_CHECKLISTS.some(d => d.id === checklist.id);
+    if (deleteBtn) deleteBtn.style.display = isSeasonal ? 'none' : 'flex';
     
     renderChecklistItems();
     showView('checklistDetailView');
@@ -1112,16 +1292,25 @@ async function addChecklistItem() {
 async function resetChecklist() {
     if (!state.currentChecklist) return;
     
-    const items = (state.currentChecklist.items || []).map(i => ({ ...i, done: false }));
-    state.currentChecklist.items = items;
-    
-    await saveToFirestore('checklists', state.currentChecklist.id, { items });
-    renderChecklistItems();
-    showToast('Sjekkliste tilbakestilt');
+    showConfirm('Tilbakestill?', 'Alle punkter vil bli satt som ikke fullført.', async () => {
+        const items = (state.currentChecklist.items || []).map(i => ({ ...i, done: false }));
+        state.currentChecklist.items = items;
+        
+        await saveToFirestore('checklists', state.currentChecklist.id, { items });
+        renderChecklistItems();
+        showToast('Sjekkliste tilbakestilt');
+    }, '🔄');
 }
 
 function deleteCurrentChecklist() {
     if (!state.currentChecklist) return;
+    
+    // Prevent deleting seasonal checklists
+    const isSeasonal = DEFAULT_CHECKLISTS.some(d => d.id === state.currentChecklist.id);
+    if (isSeasonal) {
+        showToast('Kan ikke slette sesong-sjekklister', 'error');
+        return;
+    }
     
     showConfirm('Slett sjekkliste?', `Er du sikker på at du vil slette "${state.currentChecklist.name}"?`, async () => {
         await deleteFromFirestore('checklists', state.currentChecklist.id);
@@ -1207,8 +1396,8 @@ function renderEmergency() {
     if (addressCard) {
         const address = state.settings?.address;
         addressCard.innerHTML = address 
-            ? `<p>${escapeHtml(address).replace(/\n/g, '<br>')}</p><button id="editAddressBtn" class="edit-btn" onclick="openSettingsModal()">Rediger</button>`
-            : `<p class="no-address">Ikke satt opp</p><button id="editAddressBtn" class="edit-btn" onclick="openSettingsModal()">Legg til</button>`;
+            ? `<p>${escapeHtml(address).replace(/\n/g, '<br>')}</p><button class="edit-btn" onclick="openSettingsModal()">Rediger</button>`
+            : `<p class="no-address">Ikke satt opp</p><button class="edit-btn" onclick="openSettingsModal()">Legg til</button>`;
     }
     
     if (contactList) {
@@ -1315,9 +1504,16 @@ function openSettingsModal() {
     const modal = $('settingsModal');
     const farmNameInput = $('settingsFarmName');
     const addressInput = $('settingsAddress');
+    const darkModeCheck = $('settingsDarkMode');
+    const notificationsCheck = $('settingsNotifications');
+    const fontSizeSelect = $('settingsFontSize');
     
     if (farmNameInput) farmNameInput.value = state.settings?.farmName || '';
     if (addressInput) addressInput.value = state.settings?.address || '';
+    if (darkModeCheck) darkModeCheck.checked = state.settings?.darkMode || false;
+    if (notificationsCheck) notificationsCheck.checked = state.settings?.notifications !== false;
+    if (fontSizeSelect) fontSizeSelect.value = state.settings?.fontSize || 'normal';
+    
     if (modal) modal.classList.add('active');
 }
 
@@ -1327,17 +1523,22 @@ function closeSettingsModal() {
 }
 
 async function saveSettings() {
-    const farmName = $('settingsFarmName')?.value?.trim() || '';
-    const address = $('settingsAddress')?.value?.trim() || '';
+    const settings = {
+        farmName: $('settingsFarmName')?.value?.trim() || '',
+        address: $('settingsAddress')?.value?.trim() || '',
+        darkMode: $('settingsDarkMode')?.checked || false,
+        notifications: $('settingsNotifications')?.checked !== false,
+        fontSize: $('settingsFontSize')?.value || 'normal'
+    };
     
-    state.settings = { ...state.settings, farmName, address };
+    state.settings = settings;
     
     try {
         await db.collection('users').doc(state.user.uid).set({
-            settings: state.settings
+            settings: settings
         }, { merge: true });
         
-        updateUserUI();
+        applySettings();
         closeSettingsModal();
         showToast('Innstillinger lagret ✓');
     } catch (error) {
@@ -1346,7 +1547,7 @@ async function saveSettings() {
 }
 
 function clearAllData() {
-    showConfirm('Slett all data?', 'Dette kan ikke angres! All data vil bli permanent slettet.', async () => {
+    showConfirm('Slett all data?', 'Dette kan ikke angres! Alle artikler, kontakter og sjekklister vil bli slettet.', async () => {
         try {
             // Delete all collections
             for (const article of state.articles) {
@@ -1368,11 +1569,16 @@ function clearAllData() {
             state.contacts = [];
             state.checklists = [];
             state.categories = [...DEFAULT_CATEGORIES];
-            state.settings = {};
             state.recentArticles = [];
             
+            // Re-add seasonal checklists
+            for (const checklist of DEFAULT_CHECKLISTS) {
+                await saveToFirestore('checklists', checklist.id, checklist);
+                state.checklists.push(checklist);
+            }
+            
             closeSettingsModal();
-            showToast('All data slettet');
+            showToast('Data slettet');
             renderDashboard();
         } catch (error) {
             showToast('Kunne ikke slette data', 'error');
@@ -1383,6 +1589,12 @@ function clearAllData() {
 // ===== Sync/Export/Import =====
 function openSyncModal() {
     const modal = $('syncModal');
+    const userEmail = $('syncUserEmail');
+    
+    if (userEmail && state.user?.email) {
+        userEmail.textContent = state.user.email;
+    }
+    
     if (modal) modal.classList.add('active');
 }
 
@@ -1451,6 +1663,7 @@ function importData() {
                 state.checklists = data.checklists || [];
                 state.settings = data.settings || {};
                 
+                applySettings();
                 renderDashboard();
                 showToast('Data importert ✓');
             });
@@ -1548,10 +1761,12 @@ window.openChecklist = openChecklist;
 window.openLightbox = openLightbox;
 window.removeImage = removeImage;
 window.selectEmoji = selectEmoji;
-window.deleteCategory = deleteCategory;
+window.handleDeleteCategory = handleDeleteCategory;
 window.toggleChecklistItem = toggleChecklistItem;
 window.deleteChecklistItem = deleteChecklistItem;
 window.openSettingsModal = openSettingsModal;
+window.editContact = editContact;
+window.deleteContact = deleteContact;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', () => {

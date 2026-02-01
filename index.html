@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
-    <link rel="stylesheet" href="style.css?v=4.0">
+    <link rel="stylesheet" href="style.css?v=4.1">
 </head>
 <body>
     <!-- Login Screen -->
@@ -449,24 +449,66 @@
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content large">
             <div class="modal-header">
                 <h2>⚙️ Innstillinger</h2>
                 <button id="closeSettingsModal" class="close-btn">✕</button>
             </div>
             <div class="settings-content">
-                <div class="form-group">
-                    <label for="settingsFarmName">Gårdens navn</label>
-                    <input type="text" id="settingsFarmName" placeholder="F.eks. Nordgården">
+                <div class="settings-section">
+                    <h3>🏡 Gårdsinformasjon</h3>
+                    <div class="form-group">
+                        <label for="settingsFarmName">Gårdens navn</label>
+                        <input type="text" id="settingsFarmName" placeholder="F.eks. Nordgården">
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsAddress">Adresse (for nødhjelp)</label>
+                        <textarea id="settingsAddress" rows="3" placeholder="Gårdsvegen 1&#10;1234 Bygda"></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="settingsAddress">Adresse (for nødhjelp)</label>
-                    <textarea id="settingsAddress" rows="3" placeholder="Gårdsvegen 1&#10;1234 Bygda"></textarea>
+                
+                <div class="settings-section">
+                    <h3>🎨 Utseende</h3>
+                    <div class="form-group toggle-group">
+                        <label for="settingsDarkMode">
+                            <span>🌙 Mørkt tema</span>
+                            <span class="toggle-hint">Enklere for øynene i mørket</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingsDarkMode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsFontSize">📏 Skriftstørrelse</label>
+                        <select id="settingsFontSize">
+                            <option value="small">Liten</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="large">Stor</option>
+                        </select>
+                    </div>
                 </div>
-                <button id="saveSettingsBtn" class="btn-primary">💾 Lagre innstillinger</button>
+                
+                <div class="settings-section">
+                    <h3>🔔 Varsler</h3>
+                    <div class="form-group toggle-group">
+                        <label for="settingsNotifications">
+                            <span>📬 Aktiver varsler</span>
+                            <span class="toggle-hint">Påminnelser om sesongoppgaver</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingsNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="saveSettingsBtn" class="btn-primary full-width">💾 Lagre innstillinger</button>
+                
                 <hr class="settings-divider">
                 <div class="danger-zone">
                     <h3>⚠️ Faresone</h3>
+                    <p class="danger-hint">Disse handlingene kan ikke angres</p>
                     <button id="clearAllDataBtn" class="btn-danger">🗑️ Slett all data</button>
                 </div>
             </div>
@@ -483,7 +525,7 @@
             <div class="about-content">
                 <div class="about-logo">🏡</div>
                 <h3>Småbruk Kunnskapsbase</h3>
-                <p class="version">Versjon 4.0.0</p>
+                <p class="version">Versjon 4.1.0</p>
                 <p class="about-text">
                     En app for å samle og bevare kunnskap om ditt småbruk. 
                     Lagre tips, oppskrifter, vedlikeholdsrutiner og kontaktinformasjon 
@@ -528,6 +570,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <!-- App -->
-    <script src="app.js?v=4.0"></script>
+    <script src="app.js?v=4.1"></script>
 </body>
 </html>
