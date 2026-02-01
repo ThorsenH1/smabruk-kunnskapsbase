@@ -1,10 +1,10 @@
 // ==========================================
-// SMÅBRUK KUNNSKAPSBASE APP v4.2
+// SMÅBRUK KUNNSKAPSBASE APP v4.10
 // Firebase-basert med Google Auth
-// Med værmelding, sesong og auto-reset
+// Med værmelding, sesong, auto-reset og feedback
 // ==========================================
 
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.10.0';
 
 // ===== Firebase Configuration =====
 const firebaseConfig = {
@@ -479,6 +479,16 @@ function applySettings() {
     const farmName = $('farmName');
     if (farmName && state.settings?.farmName) {
         farmName.textContent = state.settings.farmName;
+    }
+    
+    // Update version display
+    const versionInfo = $('versionInfo');
+    if (versionInfo) {
+        versionInfo.textContent = 'Versjon ' + APP_VERSION;
+    }
+    const aboutVersion = $('aboutVersion');
+    if (aboutVersion) {
+        aboutVersion.textContent = 'Versjon ' + APP_VERSION;
     }
     
     if (state.settings?.darkMode) {
