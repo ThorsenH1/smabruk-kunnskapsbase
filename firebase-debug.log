@@ -1,0 +1,45 @@
+[debug] [2026-02-01T15:07:29.316Z] ----------------------------------------------------------------------
+[debug] [2026-02-01T15:07:29.321Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\hat\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2026-02-01T15:07:29.321Z] CLI Version:   15.5.1
+[debug] [2026-02-01T15:07:29.321Z] Platform:      win32
+[debug] [2026-02-01T15:07:29.321Z] Node Version:  v24.11.1
+[debug] [2026-02-01T15:07:29.322Z] Time:          Sun Feb 01 2026 16:07:29 GMT+0100 (Central European Standard Time)
+[debug] [2026-02-01T15:07:29.322Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\hat\OneDrive - University of Bergen\Arv-prosjekt veslemøy
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-02-01T15:08:02.867Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-01T15:08:02.867Z] > authorizing via signed-in user (halvor.thorsenh@gmail.com)
+[debug] [2026-02-01T15:08:02.869Z] Checked if tokens are valid: true, expires at: 1769962040639
+[debug] [2026-02-01T15:08:02.869Z] Checked if tokens are valid: true, expires at: 1769962040639
+[debug] [2026-02-01T15:08:02.870Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2026-02-01T15:08:03.549Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2026-02-01T15:08:03.550Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[debug] [2026-02-01T15:08:08.514Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (C:\Users\hat\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\@inquirer\core\dist\commonjs\lib\create-prompt.js:101:37)
+    at Interface.emit (node:events:508:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1317:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:284:20)
+    at ReadStream.emit (node:events:520:35)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+[error] 
+[error] Error: An unexpected error has occurred.
