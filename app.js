@@ -238,7 +238,35 @@ async function loadCollection(collection) {
 }
 
 // ===== Auth Functions =====
-function setupAuth() {
+async function setupAuth() {
+    console.log('🔐 Setting up auth...');
+    
+    // Set persistence to LOCAL - keeps user logged in even after browser close
+    try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        console.log('✓ Auth persistence set to LOCAL');
+    } catch (e) {
+        console.warn('Could not set persistence:', e);
+    }
+    
+    // Check if we're returning from a redirect
+    try {
+        const result = await auth.getRedirectResult();
+        if (result && result.user) {
+            console.log('✓ Redirect login successful for:', result.user.email);
+            state.user = result.user;
+            // Don't call handleAuthChange here - onAuthStateChanged will handle it
+        } else {
+            console.log('ℹ️ No redirect result (normal page load)');
+        }
+    } catch (error) {
+        console.error('❌ Redirect result error:', error.code, error.message);
+        if (error.code === 'auth/account-exists-with-different-credential') {
+            showToast('Denne e-posten er allerede registrert', 'error');
+        }
+    }
+    
+    // Set up login button
     on('googleLoginBtn', 'click', async () => {
         const btn = $('googleLoginBtn');
         if (btn) {
@@ -250,6 +278,7 @@ function setupAuth() {
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.addScope('profile');
             provider.addScope('email');
+            console.log('🚀 Starting Google redirect...');
             await auth.signInWithRedirect(provider);
         } catch (error) {
             console.error('Login error:', error);
@@ -261,58 +290,35 @@ function setupAuth() {
         }
     });
 
-    // Handle redirect result FIRST before setting up onAuthStateChanged
-    auth.getRedirectResult()
-        .then((result) => {
-            if (result.user) {
-                console.log('✓ Redirect login successful for:', result.user.email);
-                state.user = result.user;
-                handleAuthChange(result.user);
-            }
-        })
-        .catch((error) => {
-            if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-                console.log('Login cancelled by user');
-            } else if (error.code !== 'auth/operation-not-supported-in-this-environment') {
-                console.error('Redirect result error:', error.code, error.message);
-            }
-        });
-
-    // Set up auth state listener
+    // Set up auth state listener - THIS is what handles the actual login
     auth.onAuthStateChanged(async (user) => {
+        console.log('🔄 Auth state changed:', user ? user.email : 'null');
+        
+        const loginScreen = $('loginScreen');
+        const mainApp = $('mainApp');
+        const splashScreen = $('splashScreen');
+        
         if (user) {
-            console.log('✓ Auth state changed - user logged in:', user.email);
+            console.log('✓ User is logged in:', user.email);
             state.user = user;
-            await handleAuthChange(user);
+            
+            // Hide login, show app
+            if (loginScreen) loginScreen.classList.add('hidden');
+            if (splashScreen) splashScreen.classList.remove('hidden');
+            
+            await initApp();
         } else {
-            console.log('✗ Auth state changed - user logged out');
+            console.log('✗ User is logged out');
             state.user = null;
-            showLoginScreen();
+            
+            // Show login, hide app
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (mainApp) mainApp.classList.add('hidden');
+            if (splashScreen) splashScreen.classList.add('hidden');
         }
     });
-}
-
-async function handleAuthChange(user) {
-    const loginScreen = $('loginScreen');
-    const mainApp = $('mainApp');
     
-    if (user) {
-        if (loginScreen) loginScreen.classList.add('hidden');
-        if (mainApp) mainApp.classList.remove('hidden');
-        await initApp();
-    } else {
-        showLoginScreen();
-    }
-}
-
-function showLoginScreen() {
-    const loginScreen = $('loginScreen');
-    const mainApp = $('mainApp');
-    const splashScreen = $('splashScreen');
-    
-    if (loginScreen) loginScreen.classList.remove('hidden');
-    if (mainApp) mainApp.classList.add('hidden');
-    if (splashScreen) splashScreen.classList.add('hidden');
+    console.log('✓ Auth setup complete');
 }
 
 async function doSignOut() {
@@ -2014,6 +2020,7 @@ window.openSettingsModal = openSettingsModal;
 window.editContact = editContact;
 
 // ===== Start App =====
-document.addEventListener('DOMContentLoaded', () => {
-    setupAuth();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🏡 Småbruk Kunnskapsbase v' + APP_VERSION + ' starting...');
+    await setupAuth();
 });
