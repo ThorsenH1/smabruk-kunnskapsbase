@@ -388,25 +388,31 @@ function showView(viewId) {
 
 // ===== Dashboard =====
 function renderDashboard() {
-    // Stats
+    // Stats (with null checks)
     const favorites = state.articles.filter(a => a.favorite);
-    $('totalArticles').textContent = state.articles.length;
-    $('totalCategories').textContent = state.categories.length;
-    $('totalFavorites').textContent = favorites.length;
+    const totalArticles = $('totalArticles');
+    const totalCategories = $('totalCategories');
+    const totalFavorites = $('totalFavorites');
+    
+    if (totalArticles) totalArticles.textContent = state.articles.length;
+    if (totalCategories) totalCategories.textContent = state.categories.length;
+    if (totalFavorites) totalFavorites.textContent = favorites.length;
     
     // Favorites section
     const favSection = $('favoritesSection');
     const favList = $('favoritesList');
-    if (favorites.length > 0) {
-        favSection.style.display = 'block';
-        favList.innerHTML = favorites.slice(0, 5).map(a => `
-            <div class="card-mini" onclick="openArticle('${a.id}')">
-                <div class="card-mini-icon">${getCategoryIcon(a.category)}</div>
-                <div class="card-mini-title">${escapeHtml(a.title)}</div>
-            </div>
-        `).join('');
-    } else {
-        favSection.style.display = 'none';
+    if (favSection && favList) {
+        if (favorites.length > 0) {
+            favSection.style.display = 'block';
+            favList.innerHTML = favorites.slice(0, 5).map(a => `
+                <div class="card-mini" onclick="openArticle('${a.id}')">
+                    <div class="card-mini-icon">${getCategoryIcon(a.category)}</div>
+                    <div class="card-mini-title">${escapeHtml(a.title)}</div>
+                </div>
+            `).join('');
+        } else {
+            favSection.style.display = 'none';
+        }
     }
     
     // Recent section
@@ -416,16 +422,18 @@ function renderDashboard() {
         .map(id => state.articles.find(a => a.id === id))
         .filter(Boolean);
     
-    if (recentArticles.length > 0) {
-        recentSection.style.display = 'block';
-        recentList.innerHTML = recentArticles.slice(0, 5).map(a => `
-            <div class="card-mini" onclick="openArticle('${a.id}')">
-                <div class="card-mini-icon">${getCategoryIcon(a.category)}</div>
-                <div class="card-mini-title">${escapeHtml(a.title)}</div>
-            </div>
-        `).join('');
-    } else {
-        recentSection.style.display = 'none';
+    if (recentSection && recentList) {
+        if (recentArticles.length > 0) {
+            recentSection.style.display = 'block';
+            recentList.innerHTML = recentArticles.slice(0, 5).map(a => `
+                <div class="card-mini" onclick="openArticle('${a.id}')">
+                    <div class="card-mini-icon">${getCategoryIcon(a.category)}</div>
+                    <div class="card-mini-title">${escapeHtml(a.title)}</div>
+                </div>
+            `).join('');
+        } else {
+            recentSection.style.display = 'none';
+        }
     }
     
     // Categories
@@ -433,7 +441,11 @@ function renderDashboard() {
 }
 
 function renderCategoriesGrid() {
-    const grid = $('categoriesGrid');
+    const grid = $('categoryGrid');
+    if (!grid) {
+        console.error('categoryGrid element not found');
+        return;
+    }
     grid.innerHTML = state.categories.map(cat => {
         const count = state.articles.filter(a => a.category === cat.id).length;
         return `
