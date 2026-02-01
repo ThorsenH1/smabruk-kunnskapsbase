@@ -706,6 +706,12 @@ function setupEventListeners() {
 }
 
 // ===== View Management =====
+// ===== View Management =====
+function updateBodyOverflow() {
+    const hasActiveModal = $$('.modal.active').length > 0;
+    document.body.style.overflow = hasActiveModal ? 'hidden' : 'auto';
+}
+
 function showView(viewId) {
     $$('.view').forEach(v => v.classList.remove('active'));
     const view = $(viewId);
@@ -1031,7 +1037,7 @@ function openArticleModal(article = null) {
     
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1039,7 +1045,7 @@ function closeArticleModal() {
     const modal = $('articleModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
     state.editingArticle = null;
     state.tempImages = [];
@@ -1145,7 +1151,7 @@ function openCategoryModal() {
     const modal = $('categoryModal');
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
     renderCategoryList();
     renderEmojiGrid();
@@ -1155,7 +1161,7 @@ function closeCategoryModal() {
     const modal = $('categoryModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -1338,7 +1344,7 @@ function openContactModal(contact = null) {
     
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1346,7 +1352,7 @@ function closeContactModal() {
     const modal = $('contactModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
     state.editingContact = null;
 }
@@ -1585,7 +1591,7 @@ function openChecklistModal() {
     if (iconSelect) iconSelect.value = '📋';
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1593,7 +1599,7 @@ function closeChecklistModal() {
     const modal = $('checklistModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -1781,7 +1787,7 @@ function openSettingsModal() {
     
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1789,7 +1795,7 @@ function closeSettingsModal() {
     const modal = $('settingsModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -1898,7 +1904,7 @@ function openSyncModal() {
     
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1906,7 +1912,7 @@ function closeSyncModal() {
     const modal = $('syncModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -1986,7 +1992,7 @@ function openAboutModal() {
     const modal = $('aboutModal');
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -1994,7 +2000,7 @@ function closeAboutModal() {
     const modal = $('aboutModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -2030,7 +2036,7 @@ function showConfirm(title, message, callback, icon = '⚠️') {
     
     if (modal) {
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        updateBodyOverflow();
     }
 }
 
@@ -2046,7 +2052,7 @@ function closeConfirmModal() {
     const modal = $('confirmModal');
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        updateBodyOverflow();
     }
 }
 
@@ -2067,7 +2073,7 @@ function showToast(message, type = 'success') {
 function closeAllModals() {
     $$('.modal').forEach(m => m.classList.remove('active'));
     pendingConfirmAction = null;
-    document.body.style.overflow = 'auto';
+    updateBodyOverflow();
 }
 
 // ===== Global Functions =====
