@@ -245,6 +245,8 @@ function updateUserUI() {
     const syncBtn = $('syncBtn');
     if (syncBtn && state.user?.photoURL) {
         syncBtn.innerHTML = `<img src="${state.user.photoURL}" class="user-avatar" alt="Profil" style="width:28px;height:28px;border-radius:50%;">`;
+        // Re-attach event listener after innerHTML change
+        syncBtn.onclick = openUserMenu;
     }
     
     const farmName = $('farmName');
@@ -265,7 +267,6 @@ function setupEventListeners() {
     
     // Header
     on('homeBtn', 'click', () => showView('dashboardView'));
-    on('syncBtn', 'click', openUserMenu);
     on('menuBtn', 'click', openMenu);
     
     // Quick actions
