@@ -2,409 +2,531 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2d5a27">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Småbruk">
-    <meta name="theme-color" content="#1a472a">
     <title>Småbruk Kunnskapsbase</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/icon-192.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
+    <link rel="stylesheet" href="style.css?v=4.0">
 </head>
 <body>
-    <div id="app">
-        <!-- Login Screen -->
-        <div id="loginScreen" class="login-screen">
-            <div class="login-content">
-                <div class="login-icon">
-                    <span class="login-emoji">🏡</span>
-                    <div class="login-rings"></div>
-                </div>
-                <h1 class="login-title">Småbruk</h1>
-                <p class="login-subtitle">Kunnskapsbase</p>
-                <p class="login-desc">Logg inn for å få tilgang til din personlige kunnskapsbase</p>
-                <button id="googleLoginBtn" class="google-login-btn">
-                    <svg class="google-icon" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Logg inn med Google
-                </button>
-                <p class="login-note">🔒 Din data er privat og synkroniseres på tvers av enheter</p>
-            </div>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-content">
+            <div class="login-logo">🏡</div>
+            <h1>Småbruk Kunnskapsbase</h1>
+            <p class="login-subtitle">Logg inn for å synkronisere din kunnskap</p>
+            <button id="googleLoginBtn" class="google-login-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Logg inn med Google
+            </button>
+            <p class="login-hint">Din data lagres privat i skyen</p>
         </div>
-
-        <!-- Splash Screen -->
-        <div id="splashScreen" class="splash-screen hidden">
-            <div class="splash-content">
-                <div class="splash-icon">
-                    <span class="splash-emoji">🏡</span>
-                    <div class="splash-rings"></div>
-                </div>
-                <h1 class="splash-title">Småbruk</h1>
-                <p class="splash-subtitle">Kunnskapsbase</p>
-                <div class="splash-loader"><div class="loader-bar"></div></div>
-            </div>
-        </div>
-
-        <!-- Main App -->
-        <div id="mainApp" class="main-app hidden">
-            <!-- Header -->
-            <header class="app-header">
-                <div class="header-bg"></div>
-                <div class="header-content">
-                    <div class="header-left">
-                        <button id="homeBtn" class="logo-btn">
-                            <span class="logo-icon">🏡</span>
-                            <div class="logo-text">
-                                <h1>Småbruk</h1>
-                                <span class="logo-subtitle">Kunnskapsbase</span>
-                            </div>
-                        </button>
-                    </div>
-                    <div class="header-right">
-                        <button id="syncBtn" class="header-btn" aria-label="Synkroniser">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="23 4 23 10 17 10"></polyline>
-                                <polyline points="1 20 1 14 7 14"></polyline>
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                            </svg>
-                        </button>
-                        <button id="menuBtn" class="header-btn" aria-label="Meny">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="3" y1="12" x2="21" y2="12"></line>
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <line x1="3" y1="18" x2="21" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Search -->
-            <div class="search-container">
-                <div class="search-box">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="searchInput" placeholder="Søk etter informasjon..." autocomplete="off">
-                    <button id="clearSearch" class="clear-btn hidden">✕</button>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Dashboard -->
-                <div id="dashboardView" class="view active">
-                    <div class="stats-row">
-                        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value" id="totalArticles">0</span><span class="stat-label">Artikler</span></div></div>
-                        <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-info"><span class="stat-value" id="totalCategories">0</span><span class="stat-label">Kategorier</span></div></div>
-                        <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-info"><span class="stat-value" id="totalFavorites">0</span><span class="stat-label">Favoritter</span></div></div>
-                    </div>
-
-                    <section class="quick-actions">
-                        <button class="quick-action-btn" id="quickAddBtn"><div class="quick-action-icon add">➕</div><span>Ny artikkel</span></button>
-                        <button class="quick-action-btn" id="quickContactBtn"><div class="quick-action-icon">📞</div><span>Kontakter</span></button>
-                        <button class="quick-action-btn" id="quickChecklistBtn"><div class="quick-action-icon">✅</div><span>Sjekklister</span></button>
-                        <button class="quick-action-btn" id="quickEmergencyBtn"><div class="quick-action-icon emergency">🆘</div><span>Nødhjelp</span></button>
-                    </section>
-
-                    <section class="section" id="favoritesSection" style="display:none;">
-                        <div class="section-header"><h2>⭐ Favoritter</h2><button class="see-all-btn" id="seeAllFavorites">Se alle</button></div>
-                        <div class="horizontal-scroll" id="favoritesList"></div>
-                    </section>
-
-                    <section class="section" id="recentSection" style="display:none;">
-                        <div class="section-header"><h2>🕐 Nylig sett</h2><button class="see-all-btn" id="clearRecent">Tøm</button></div>
-                        <div class="horizontal-scroll" id="recentList"></div>
-                    </section>
-
-                    <section class="section">
-                        <div class="section-header"><h2>📁 Kategorier</h2><button class="see-all-btn" id="manageCategoriesBtn">+ Ny</button></div>
-                        <div class="category-grid" id="categoryGrid"></div>
-                    </section>
-                </div>
-
-                <!-- Articles List -->
-                <div id="articlesView" class="view">
-                    <div class="view-header">
-                        <button id="backToCategories" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><span class="view-icon" id="categoryIcon"></span><h2 id="categoryTitle"></h2></div>
-                        <span class="badge" id="articleCount"></span>
-                    </div>
-                    <div class="filter-bar"><select id="sortSelect" class="filter-select"><option value="alpha">A-Å</option><option value="newest">Nyeste</option><option value="oldest">Eldste</option></select></div>
-                    <div class="articles-list" id="articlesList"></div>
-                </div>
-
-                <!-- Article Detail -->
-                <div id="articleView" class="view">
-                    <div class="view-header">
-                        <button id="backToArticles" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="article-actions">
-                            <button id="favoriteArticleBtn" class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
-                            <button id="editArticleBtn" class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                            <button id="deleteArticleBtn" class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                    </div>
-                    <article class="article-content" id="articleContent"></article>
-                </div>
-
-                <!-- Search Results -->
-                <div id="searchView" class="view">
-                    <div class="view-header">
-                        <button id="backFromSearch" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><h2>Søkeresultater</h2></div>
-                        <span class="badge" id="searchCount"></span>
-                    </div>
-                    <div class="articles-list" id="searchResults"></div>
-                </div>
-
-                <!-- Contacts -->
-                <div id="contactsView" class="view">
-                    <div class="view-header">
-                        <button id="backFromContacts" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><span class="view-icon">📞</span><h2>Kontakter</h2></div>
-                        <button id="addContactBtn" class="add-btn">+</button>
-                    </div>
-                    <div class="contacts-list" id="contactsList"></div>
-                </div>
-
-                <!-- Checklists -->
-                <div id="checklistsView" class="view">
-                    <div class="view-header">
-                        <button id="backFromChecklists" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><span class="view-icon">✅</span><h2>Sjekklister</h2></div>
-                        <button id="addChecklistBtn" class="add-btn">+</button>
-                    </div>
-                    <div class="checklists-list" id="checklistsList"></div>
-                </div>
-
-                <!-- Checklist Detail -->
-                <div id="checklistDetailView" class="view">
-                    <div class="view-header">
-                        <button id="backFromChecklistDetail" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><h2 id="checklistTitle"></h2></div>
-                        <div class="checklist-actions">
-                            <button id="resetChecklistBtn" class="action-btn">🔄</button>
-                            <button id="deleteChecklistBtn" class="action-btn danger">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="checklist-progress"><div class="progress-bar"><div class="progress-fill" id="checklistProgress"></div></div><span id="checklistProgressText">0/0</span></div>
-                    <div class="checklist-items" id="checklistItems"></div>
-                    <button id="addChecklistItemBtn" class="add-item-btn">+ Legg til punkt</button>
-                </div>
-
-                <!-- Emergency -->
-                <div id="emergencyView" class="view">
-                    <div class="view-header emergency-header">
-                        <button id="backFromEmergency" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><span class="view-icon">🆘</span><h2>Nødhjelp</h2></div>
-                    </div>
-                    <div class="emergency-content">
-                        <div class="emergency-numbers">
-                            <a href="tel:113" class="emergency-call ambulance"><span class="em-icon">🚑</span><span class="em-label">Ambulanse</span><span class="em-number">113</span></a>
-                            <a href="tel:110" class="emergency-call fire"><span class="em-icon">🚒</span><span class="em-label">Brann</span><span class="em-number">110</span></a>
-                            <a href="tel:112" class="emergency-call police"><span class="em-icon">🚔</span><span class="em-label">Politi</span><span class="em-number">112</span></a>
-                        </div>
-                        <div class="emergency-section">
-                            <h3>📍 Gårdens adresse</h3>
-                            <div class="address-card" id="farmAddress"><p>Ikke satt opp</p><button id="editAddressBtn" class="edit-btn">Rediger</button></div>
-                        </div>
-                        <div class="emergency-section">
-                            <h3>📞 Viktige kontakter</h3>
-                            <div id="emergencyContactList"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Favorites -->
-                <div id="favoritesView" class="view">
-                    <div class="view-header">
-                        <button id="backFromFavorites" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                        <div class="view-title"><span class="view-icon">⭐</span><h2>Favoritter</h2></div>
-                    </div>
-                    <div class="articles-list" id="allFavoritesList"></div>
-                </div>
-            </main>
-
-            <!-- FAB -->
-            <button id="addBtn" class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-
-            <!-- Bottom Nav -->
-            <nav class="bottom-nav">
-                <button class="nav-item active" data-view="dashboardView"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span>Hjem</span></button>
-                <button class="nav-item" data-view="contactsView"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>Kontakter</span></button>
-                <div class="nav-item fab-space"></div>
-                <button class="nav-item" data-view="checklistsView"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span>Sjekklister</span></button>
-                <button class="nav-item" data-view="favoritesView"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>Favoritter</span></button>
-            </nav>
-        </div>
-
-        <!-- Side Menu -->
-        <div id="sideMenu" class="side-menu">
-            <div class="menu-header">
-                <div class="menu-profile"><div class="profile-avatar">🏡</div><div class="profile-info"><h3 id="farmName">Mitt Småbruk</h3><p>Kunnskapsbase</p></div></div>
-                <button id="closeMenu" class="close-btn">✕</button>
-            </div>
-            <nav class="menu-nav">
-                <button id="menuHome" class="menu-item"><span>🏠</span>Hjem</button>
-                <button id="menuSettings" class="menu-item"><span>⚙️</span>Innstillinger</button>
-                <div class="menu-divider"></div>
-                <button id="menuCategories" class="menu-item"><span>📁</span>Kategorier</button>
-                <div class="menu-divider"></div>
-                <button id="menuSync" class="menu-item"><span>🔄</span>Synkroniser<span class="badge-new">Ny</span></button>
-                <button id="menuExport" class="menu-item"><span>📤</span>Eksporter data</button>
-                <button id="menuImport" class="menu-item"><span>📥</span>Importer data</button>
-                <div class="menu-divider"></div>
-                <button id="menuAbout" class="menu-item"><span>ℹ️</span>Om appen</button>
-            </nav>
-            <div class="menu-footer">Versjon 2.0</div>
-        </div>
-        <div id="menuOverlay" class="menu-overlay"></div>
-
-        <!-- Modals -->
-        <div id="articleModal" class="modal">
-            <div class="modal-content modal-full">
-                <div class="modal-header"><button class="modal-close" id="closeArticleModal">✕</button><h2 id="modalTitle">Ny artikkel</h2><button type="submit" form="articleForm" class="modal-save">Lagre</button></div>
-                <form id="articleForm" class="modal-body">
-                    <div class="form-group"><label>Tittel *</label><input type="text" id="articleTitleInput" required placeholder="F.eks. Hvordan starte vannpumpen"></div>
-                    <div class="form-group"><label>Kategori *</label><select id="articleCategory" required></select></div>
-                    <div class="form-group"><label>Stikkord</label><input type="text" id="articleTags" placeholder="pumpe, vann, vedlikehold"></div>
-                    <div class="form-group"><label>Beskrivelse *</label><textarea id="articleText" required rows="8" placeholder="Skriv en detaljert beskrivelse..."></textarea></div>
-                    <div class="form-group">
-                        <label>Bilder</label>
-                        <div class="image-btns">
-                            <input type="file" id="imageInput" accept="image/*" multiple hidden>
-                            <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-                            <button type="button" id="addImageBtn" class="img-btn">🖼️ Velg bilder</button>
-                            <button type="button" id="cameraBtn" class="img-btn">📸 Ta bilde</button>
-                        </div>
-                        <div class="image-preview-list" id="imagePreviewList"></div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="categoryModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeCategoryModal">✕</button><h2>Kategorier</h2><div></div></div>
-                <div class="modal-body">
-                    <div class="new-cat-form"><button type="button" id="selectEmojiBtn" class="emoji-btn">📁</button><input type="text" id="newCategoryName" placeholder="Ny kategori"><button id="addCategoryBtn" class="add-cat-btn">+</button></div>
-                    <div class="category-list" id="manageCategoryList"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="contactModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeContactModal">✕</button><h2 id="contactModalTitle">Ny kontakt</h2><button type="submit" form="contactForm" class="modal-save">Lagre</button></div>
-                <form id="contactForm" class="modal-body">
-                    <div class="form-group"><label>Navn *</label><input type="text" id="contactName" required placeholder="F.eks. Rørlegger Ola"></div>
-                    <div class="form-group"><label>Telefon *</label><input type="tel" id="contactPhone" required placeholder="123 45 678"></div>
-                    <div class="form-group"><label>Type</label><select id="contactCategory"><option value="handverker">🔧 Håndverker</option><option value="leverandor">📦 Leverandør</option><option value="nabo">🏠 Nabo</option><option value="veterinar">🐄 Veterinær</option><option value="offentlig">🏛️ Offentlig</option><option value="annet">📝 Annet</option></select></div>
-                    <div class="form-group"><label>Notat</label><textarea id="contactNote" rows="2" placeholder="Spesialist på gamle pumper"></textarea></div>
-                    <label class="checkbox"><input type="checkbox" id="contactEmergency"><span>Vis i nødhjelp 🆘</span></label>
-                </form>
-            </div>
-        </div>
-
-        <div id="checklistModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeChecklistModal">✕</button><h2>Ny sjekkliste</h2><button type="submit" form="checklistForm" class="modal-save">Lagre</button></div>
-                <form id="checklistForm" class="modal-body">
-                    <div class="form-group"><label>Navn *</label><input type="text" id="checklistName" required placeholder="F.eks. Vårklargjøring"></div>
-                    <div class="form-group"><label>Ikon</label><select id="checklistIcon"><option value="🌸">🌸 Vår</option><option value="☀️">☀️ Sommer</option><option value="🍂">🍂 Høst</option><option value="❄️">❄️ Vinter</option><option value="🔧">🔧 Vedlikehold</option><option value="🐄">🐄 Dyr</option><option value="🌱">🌱 Hage</option><option value="📋">📋 Generelt</option></select></div>
-                </form>
-            </div>
-        </div>
-
-        <div id="syncModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeSyncModal">✕</button><h2>Synkroniser</h2><div></div></div>
-                <div class="modal-body sync-body">
-                    <div class="sync-hero"><div class="sync-icon-big">🔄</div><h3>Del data mellom enheter</h3><p>Data lagres lokalt. Eksporter for å overføre til andre enheter.</p></div>
-                    <div class="sync-btns">
-                        <button id="syncExportBtn" class="sync-btn export"><span>📤</span>Eksporter data</button>
-                        <button id="syncImportBtn" class="sync-btn import"><span>📥</span>Importer data</button>
-                    </div>
-                    <div class="sync-info"><p>Siste eksport: <strong id="lastExportDate">Aldri</strong></p><p>Siste import: <strong id="lastImportDate">Aldri</strong></p></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="settingsModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeSettingsModal">✕</button><h2>Innstillinger</h2><div></div></div>
-                <div class="modal-body">
-                    <div class="settings-section">
-                        <h3>🏡 Gårdsinformasjon</h3>
-                        <div class="form-group"><label>Gårdens navn</label><input type="text" id="settingsFarmName" placeholder="Bakke Gård"></div>
-                        <div class="form-group"><label>Adresse (nødinfo)</label><textarea id="settingsAddress" rows="2" placeholder="Gårdsveien 1&#10;1234 Bygda"></textarea></div>
-                        <button id="saveSettingsBtn" class="btn-primary">Lagre</button>
-                    </div>
-                    <div class="settings-section danger">
-                        <h3>⚠️ Faresone</h3>
-                        <button id="clearAllDataBtn" class="btn-danger">Slett all data</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="emojiModal" class="modal">
-            <div class="modal-content modal-sm">
-                <div class="modal-header"><h2>Velg ikon</h2></div>
-                <div class="emoji-grid" id="emojiGrid"></div>
-            </div>
-        </div>
-
-        <div id="aboutModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><button class="modal-close" id="closeAboutModal">✕</button><h2>Om appen</h2><div></div></div>
-                <div class="modal-body about-body">
-                    <div class="about-hero"><div class="about-icon">🏡</div><h3>Småbruk Kunnskapsbase</h3><p>Versjon 2.0</p></div>
-                    <p>En app for å samle og bevare viktig kunnskap om ditt småbruk - fra generasjon til generasjon.</p>
-                    <ul class="feature-list">
-                        <li>📚 Artikler med bilder</li>
-                        <li>📁 Egne kategorier</li>
-                        <li>🔍 Kraftig søk</li>
-                        <li>⭐ Favoritter</li>
-                        <li>✅ Sjekklister</li>
-                        <li>📞 Kontaktliste</li>
-                        <li>🆘 Nødhjelp</li>
-                        <li>📶 Offline-støtte</li>
-                    </ul>
-                    <div class="tip-box">💡 <strong>Tips:</strong> Legg til på hjemskjermen i Safari for best opplevelse!</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="confirmModal" class="modal">
-            <div class="modal-content modal-sm confirm-modal">
-                <div class="confirm-icon" id="confirmIcon">⚠️</div>
-                <h3 id="confirmTitle">Bekreft</h3>
-                <p id="confirmMessage">Er du sikker?</p>
-                <div class="confirm-btns"><button id="confirmCancel" class="btn-secondary">Avbryt</button><button id="confirmOk" class="btn-danger">Bekreft</button></div>
-            </div>
-        </div>
-
-        <div id="toast" class="toast"></div>
-        <div id="lightbox" class="lightbox"><button class="lb-close">✕</button><img src="" alt=""></div>
     </div>
-    
+
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen hidden">
+        <div class="splash-content">
+            <div class="splash-logo">🏡</div>
+            <div class="splash-spinner"></div>
+            <p>Laster inn...</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="app hidden">
+        <!-- Header -->
+        <header class="header">
+            <button id="homeBtn" class="header-btn" aria-label="Hjem">🏡</button>
+            <h1 id="farmName">Småbruk Kunnskapsbase</h1>
+            <button id="syncBtn" class="header-btn" aria-label="Profil">👤</button>
+            <button id="menuBtn" class="header-btn" aria-label="Meny">☰</button>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="search" id="searchInput" placeholder="Søk i artikler..." autocomplete="off">
+                <button id="clearSearch" class="clear-search hidden">✕</button>
+            </div>
+        </div>
+
+        <!-- Views Container -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <section id="dashboardView" class="view active">
+                <!-- Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-icon">📚</span>
+                        <span id="totalArticles" class="stat-number">0</span>
+                        <span class="stat-label">Artikler</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">📁</span>
+                        <span id="totalCategories" class="stat-number">0</span>
+                        <span class="stat-label">Kategorier</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">⭐</span>
+                        <span id="totalFavorites" class="stat-number">0</span>
+                        <span class="stat-label">Favoritter</span>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button id="quickAddBtn" class="quick-btn primary">
+                        <span>📝</span> Ny artikkel
+                    </button>
+                    <button id="quickContactBtn" class="quick-btn">
+                        <span>📞</span> Kontakter
+                    </button>
+                    <button id="quickChecklistBtn" class="quick-btn">
+                        <span>✅</span> Sjekklister
+                    </button>
+                    <button id="quickEmergencyBtn" class="quick-btn danger">
+                        <span>🆘</span> Nødhjelp
+                    </button>
+                </div>
+
+                <!-- Favorites Section -->
+                <section id="favoritesSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>⭐ Favoritter</h2>
+                        <button id="seeAllFavorites" class="see-all-btn">Se alle →</button>
+                    </div>
+                    <div id="favoritesList" class="cards-row"></div>
+                </section>
+
+                <!-- Recent Section -->
+                <section id="recentSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>🕐 Nylig sett</h2>
+                        <button id="clearRecent" class="see-all-btn">Tøm</button>
+                    </div>
+                    <div id="recentList" class="cards-row"></div>
+                </section>
+
+                <!-- Categories Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>📁 Kategorier</h2>
+                        <button id="manageCategoriesBtn" class="see-all-btn">Administrer</button>
+                    </div>
+                    <div id="categoryGrid" class="category-grid"></div>
+                </section>
+            </section>
+
+            <!-- Articles View -->
+            <section id="articlesView" class="view">
+                <div class="view-header">
+                    <button id="backToCategories" class="back-btn">← Tilbake</button>
+                    <div class="view-title">
+                        <span id="categoryIcon">📁</span>
+                        <h2 id="categoryTitle">Kategori</h2>
+                        <span id="articleCount" class="count-badge">0</span>
+                    </div>
+                </div>
+                <div class="sort-bar">
+                    <select id="sortSelect">
+                        <option value="alpha">A-Å</option>
+                        <option value="newest">Nyeste først</option>
+                        <option value="oldest">Eldste først</option>
+                    </select>
+                </div>
+                <div id="articlesList" class="articles-list"></div>
+            </section>
+
+            <!-- Article Detail View -->
+            <section id="articleView" class="view">
+                <div class="view-header">
+                    <button id="backToArticles" class="back-btn">← Tilbake</button>
+                    <div class="article-actions">
+                        <button id="favoriteArticleBtn" class="action-btn" aria-label="Favoritt">⭐</button>
+                        <button id="editArticleBtn" class="action-btn" aria-label="Rediger">✏️</button>
+                        <button id="deleteArticleBtn" class="action-btn danger" aria-label="Slett">🗑️</button>
+                    </div>
+                </div>
+                <div id="articleContent" class="article-content"></div>
+            </section>
+
+            <!-- Search View -->
+            <section id="searchView" class="view">
+                <div class="view-header">
+                    <button id="backFromSearch" class="back-btn">← Tilbake</button>
+                    <h2>Søkeresultater <span id="searchCount" class="count-badge">0</span></h2>
+                </div>
+                <div id="searchResults" class="articles-list"></div>
+            </section>
+
+            <!-- Contacts View -->
+            <section id="contactsView" class="view">
+                <div class="view-header">
+                    <button id="backFromContacts" class="back-btn">← Tilbake</button>
+                    <h2>📞 Kontakter</h2>
+                    <button id="addContactBtn" class="add-btn">+ Ny</button>
+                </div>
+                <div id="contactsList" class="contacts-list"></div>
+            </section>
+
+            <!-- Checklists View -->
+            <section id="checklistsView" class="view">
+                <div class="view-header">
+                    <button id="backFromChecklists" class="back-btn">← Tilbake</button>
+                    <h2>✅ Sjekklister</h2>
+                    <button id="addChecklistBtn" class="add-btn">+ Ny</button>
+                </div>
+                <div id="checklistsList" class="checklists-list"></div>
+            </section>
+
+            <!-- Checklist Detail View -->
+            <section id="checklistDetailView" class="view">
+                <div class="view-header">
+                    <button id="backFromChecklistDetail" class="back-btn">← Tilbake</button>
+                    <h2 id="checklistTitle">Sjekkliste</h2>
+                    <div class="checklist-actions">
+                        <button id="resetChecklistBtn" class="action-btn" title="Tilbakestill">🔄</button>
+                        <button id="deleteChecklistBtn" class="action-btn danger" title="Slett">🗑️</button>
+                    </div>
+                </div>
+                <div class="checklist-progress-bar">
+                    <div id="checklistProgress" class="progress-fill"></div>
+                </div>
+                <span id="checklistProgressText" class="progress-text">0/0</span>
+                <div id="checklistItems" class="checklist-items"></div>
+                <button id="addChecklistItemBtn" class="add-item-btn">+ Legg til punkt</button>
+            </section>
+
+            <!-- Emergency View -->
+            <section id="emergencyView" class="view">
+                <div class="view-header">
+                    <button id="backFromEmergency" class="back-btn">← Tilbake</button>
+                    <h2>🆘 Nødhjelp</h2>
+                </div>
+                <div class="emergency-content">
+                    <div class="emergency-card important">
+                        <h3>📍 Gårdens adresse</h3>
+                        <div id="farmAddress" class="address-content">
+                            <p class="no-address">Ikke satt opp</p>
+                        </div>
+                    </div>
+                    <div class="emergency-numbers">
+                        <h3>📞 Nødnumre</h3>
+                        <a href="tel:113" class="emergency-btn">🚑 113 - Medisinsk</a>
+                        <a href="tel:110" class="emergency-btn">🚒 110 - Brann</a>
+                        <a href="tel:112" class="emergency-btn">🚔 112 - Politi</a>
+                    </div>
+                    <div class="emergency-card">
+                        <h3>🆘 Mine nødkontakter</h3>
+                        <div id="emergencyContactList" class="emergency-contacts"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Favorites View -->
+            <section id="favoritesView" class="view">
+                <div class="view-header">
+                    <button id="backFromFavorites" class="back-btn">← Tilbake</button>
+                    <h2>⭐ Alle favoritter</h2>
+                </div>
+                <div id="allFavoritesList" class="articles-list"></div>
+            </section>
+        </main>
+
+        <!-- FAB -->
+        <button id="addBtn" class="fab" aria-label="Legg til artikkel">+</button>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-view="dashboardView">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Hjem</span>
+            </button>
+            <button class="nav-item" data-view="contactsView">
+                <span class="nav-icon">📞</span>
+                <span class="nav-label">Kontakter</span>
+            </button>
+            <button class="nav-item" data-view="checklistsView">
+                <span class="nav-icon">✅</span>
+                <span class="nav-label">Sjekklister</span>
+            </button>
+            <button class="nav-item" data-view="favoritesView">
+                <span class="nav-icon">⭐</span>
+                <span class="nav-label">Favoritter</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Side Menu -->
+    <div id="menuOverlay" class="menu-overlay"></div>
+    <nav id="sideMenu" class="side-menu">
+        <div class="menu-header">
+            <span class="menu-logo">🏡</span>
+            <h2>Meny</h2>
+            <button id="closeMenu" class="close-menu-btn">✕</button>
+        </div>
+        <div class="menu-items">
+            <button id="menuHome" class="menu-item">🏠 Hjem</button>
+            <button id="menuSettings" class="menu-item">⚙️ Innstillinger</button>
+            <button id="menuCategories" class="menu-item">📁 Kategorier</button>
+            <hr class="menu-divider">
+            <button id="menuSync" class="menu-item">☁️ Sync & Backup</button>
+            <button id="menuExport" class="menu-item">📤 Eksporter data</button>
+            <button id="menuImport" class="menu-item">📥 Importer data</button>
+            <hr class="menu-divider">
+            <button id="menuAbout" class="menu-item">ℹ️ Om appen</button>
+        </div>
+        <div class="menu-footer">
+            <p>Versjon 4.0.0</p>
+        </div>
+    </nav>
+
+    <!-- Article Modal -->
+    <div id="articleModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ny artikkel</h2>
+                <button id="closeArticleModal" class="close-btn">✕</button>
+            </div>
+            <form id="articleForm" class="modal-form">
+                <div class="form-group">
+                    <label for="articleTitleInput">Tittel *</label>
+                    <input type="text" id="articleTitleInput" required placeholder="F.eks. Vedlikeholde traktor">
+                </div>
+                <div class="form-group">
+                    <label for="articleCategory">Kategori *</label>
+                    <select id="articleCategory" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="articleTags">Tagger (kommaseparert)</label>
+                    <input type="text" id="articleTags" placeholder="F.eks. traktor, diesel, motor">
+                </div>
+                <div class="form-group">
+                    <label for="articleText">Innhold *</label>
+                    <textarea id="articleText" rows="8" required placeholder="Skriv innholdet her..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Bilder</label>
+                    <div class="image-buttons">
+                        <button type="button" id="addImageBtn" class="img-btn">📷 Velg bilde</button>
+                        <button type="button" id="cameraBtn" class="img-btn">📸 Ta bilde</button>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" multiple hidden>
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+                    <div id="imagePreviewList" class="image-preview-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📁 Kategorier</h2>
+                <button id="closeCategoryModal" class="close-btn">✕</button>
+            </div>
+            <div id="manageCategoryList" class="category-list"></div>
+            <div class="add-category-form">
+                <button id="selectEmojiBtn" class="emoji-btn" type="button">📁</button>
+                <input type="text" id="newCategoryName" placeholder="Ny kategori...">
+                <button id="addCategoryBtn" class="btn-primary">+ Legg til</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emoji Modal -->
+    <div id="emojiModal" class="modal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Velg ikon</h2>
+                <button class="close-btn" onclick="document.getElementById('emojiModal').classList.remove('active')">✕</button>
+            </div>
+            <div id="emojiGrid" class="emoji-grid"></div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="contactModalTitle">Ny kontakt</h2>
+                <button id="closeContactModal" class="close-btn">✕</button>
+            </div>
+            <form id="contactForm" class="modal-form">
+                <div class="form-group">
+                    <label for="contactName">Navn *</label>
+                    <input type="text" id="contactName" required placeholder="F.eks. Ola Nordmann">
+                </div>
+                <div class="form-group">
+                    <label for="contactPhone">Telefon *</label>
+                    <input type="tel" id="contactPhone" required placeholder="F.eks. 12345678">
+                </div>
+                <div class="form-group">
+                    <label for="contactCategory">Type</label>
+                    <select id="contactCategory">
+                        <option value="annet">Annet</option>
+                        <option value="handverker">Håndverker</option>
+                        <option value="leverandor">Leverandør</option>
+                        <option value="nabo">Nabo</option>
+                        <option value="veterinar">Veterinær</option>
+                        <option value="offentlig">Offentlig</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contactNote">Notat</label>
+                    <input type="text" id="contactNote" placeholder="F.eks. Rørlegger, god på gamle rør">
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="contactEmergency">
+                    <label for="contactEmergency">🆘 Vis som nødkontakt</label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checklist Modal -->
+    <div id="checklistModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ny sjekkliste</h2>
+                <button id="closeChecklistModal" class="close-btn">✕</button>
+            </div>
+            <form id="checklistForm" class="modal-form">
+                <div class="form-group">
+                    <label for="checklistName">Navn *</label>
+                    <input type="text" id="checklistName" required placeholder="F.eks. Vårklargjøring traktor">
+                </div>
+                <div class="form-group">
+                    <label for="checklistIcon">Ikon</label>
+                    <select id="checklistIcon">
+                        <option value="📋">📋 Generell</option>
+                        <option value="🚜">🚜 Maskiner</option>
+                        <option value="🐑">🐑 Dyr</option>
+                        <option value="🌱">🌱 Hage</option>
+                        <option value="🏠">🏠 Hus</option>
+                        <option value="❄️">❄️ Vinter</option>
+                        <option value="☀️">☀️ Sommer</option>
+                        <option value="🍂">🍂 Høst</option>
+                        <option value="🌸">🌸 Vår</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">📋 Opprett</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sync Modal -->
+    <div id="syncModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>☁️ Sync & Backup</h2>
+                <button id="closeSyncModal" class="close-btn">✕</button>
+            </div>
+            <div class="sync-content">
+                <p class="sync-info">✅ Du er logget inn. All data synkroniseres automatisk til skyen.</p>
+                <div class="sync-actions">
+                    <button id="syncExportBtn" class="btn-secondary">📤 Eksporter backup</button>
+                    <button id="syncImportBtn" class="btn-secondary">📥 Importer backup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Innstillinger</h2>
+                <button id="closeSettingsModal" class="close-btn">✕</button>
+            </div>
+            <div class="settings-content">
+                <div class="form-group">
+                    <label for="settingsFarmName">Gårdens navn</label>
+                    <input type="text" id="settingsFarmName" placeholder="F.eks. Nordgården">
+                </div>
+                <div class="form-group">
+                    <label for="settingsAddress">Adresse (for nødhjelp)</label>
+                    <textarea id="settingsAddress" rows="3" placeholder="Gårdsvegen 1&#10;1234 Bygda"></textarea>
+                </div>
+                <button id="saveSettingsBtn" class="btn-primary">💾 Lagre innstillinger</button>
+                <hr class="settings-divider">
+                <div class="danger-zone">
+                    <h3>⚠️ Faresone</h3>
+                    <button id="clearAllDataBtn" class="btn-danger">🗑️ Slett all data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ℹ️ Om appen</h2>
+                <button id="closeAboutModal" class="close-btn">✕</button>
+            </div>
+            <div class="about-content">
+                <div class="about-logo">🏡</div>
+                <h3>Småbruk Kunnskapsbase</h3>
+                <p class="version">Versjon 4.0.0</p>
+                <p class="about-text">
+                    En app for å samle og bevare kunnskap om ditt småbruk. 
+                    Lagre tips, oppskrifter, vedlikeholdsrutiner og kontaktinformasjon 
+                    – alt på ett sted, tilgjengelig fra alle enheter.
+                </p>
+                <div class="about-features">
+                    <p>✅ Google-innlogging</p>
+                    <p>☁️ Automatisk skylagring</p>
+                    <p>📱 Fungerer offline</p>
+                    <p>🔒 Privat og sikker</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content small">
+            <div class="confirm-content">
+                <div id="confirmIcon" class="confirm-icon">⚠️</div>
+                <h3 id="confirmTitle">Er du sikker?</h3>
+                <p id="confirmMessage">Denne handlingen kan ikke angres.</p>
+                <div class="confirm-actions">
+                    <button id="confirmCancel" class="btn-secondary">Avbryt</button>
+                    <button id="confirmOk" class="btn-danger">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <img src="" alt="Fullskjerm bilde">
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
-    <script src="app.js?v=3.0.5"></script>
+    <!-- App -->
+    <script src="app.js?v=4.0"></script>
 </body>
 </html>
