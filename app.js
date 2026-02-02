@@ -1,10 +1,32 @@
 // ==========================================
-// SMÅBRUK KUNNSKAPSBASE APP v4.10
+// SMÅBRUK KUNNSKAPSBASE APP v5.0
 // Firebase-basert med Google Auth
 // Med værmelding, sesong, auto-reset og feedback
+// 🔥 EPIC ANIMATIONS EDITION 🔥
 // ==========================================
 
-const APP_VERSION = '4.10.0';
+const APP_VERSION = '5.0.0';
+
+// ===== Confetti Effect =====
+function launchConfetti() {
+    const colors = ['#2d5a27', '#4a8f42', '#f4a460', '#ffd700', '#28a745', '#dc3545'];
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        container.appendChild(confetti);
+    }
+    
+    setTimeout(() => container.remove(), 5000);
+}
 
 // ===== Firebase Configuration =====
 const firebaseConfig = {
@@ -1533,6 +1555,13 @@ async function toggleChecklistItem(index) {
         items[index].done = !items[index].done;
         await saveToFirestore('checklists', state.currentChecklist.id, { items });
         renderChecklistItems();
+        
+        // 🎉 Celebrate when all items are complete!
+        const allDone = items.length > 0 && items.every(item => item.done);
+        if (allDone) {
+            launchConfetti();
+            showToast('🎉 Fantastisk! Alle punkter er fullført!', 4000);
+        }
     }
 }
 
@@ -2210,16 +2239,27 @@ function closeConfirmModal() {
 }
 
 // ===== Toast =====
-function showToast(message, type = 'success') {
+function showToast(message, typeOrDuration = 'success', duration = 3000) {
     const toast = $('toast');
     if (!toast) return;
+    
+    // Support both: showToast('msg', 'error') and showToast('msg', 4000)
+    let type = 'success';
+    let timeout = 3000;
+    
+    if (typeof typeOrDuration === 'number') {
+        timeout = typeOrDuration;
+    } else {
+        type = typeOrDuration;
+        timeout = duration;
+    }
     
     toast.textContent = message;
     toast.className = `toast ${type} show`;
     
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 3000);
+    }, timeout);
 }
 
 // ===== Close All Modals =====
