@@ -420,6 +420,53 @@ function fileToBase64(file) {
     });
 }
 
+// ===== Helper: Compress and Convert Image =====
+async function compressAndConvertImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const img = new Image();
+            
+            img.onload = () => {
+                // Calculate new dimensions
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+                
+                // Create canvas and compress
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to data URL with compression
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedDataUrl);
+            };
+            
+            img.onerror = () => reject(new Error('Kunne ikke laste bildet'));
+            img.src = e.target.result;
+        };
+        
+        reader.onerror = () => reject(new Error('Kunne ikke lese filen'));
+        reader.readAsDataURL(file);
+    });
+}
+
 // ===== Initialize App =====
 async function initApp() {
     const splash = $('splashScreen');
@@ -2294,8 +2341,18 @@ async function handleGalleryDropFiles(files) {
         
         const newImages = [];
         for (const file of imageFiles) {
-            const base64 = await fileToBase64(file);
-            newImages.push(base64);
+            try {
+                const compressed = await compressAndConvertImage(file);
+                newImages.push(compressed);
+            } catch (err) {
+                console.warn(`Kunne ikke komprimere ${file.name}:`, err);
+                showToast(`⚠️ Kunne ikke komprimere ${file.name}`);
+            }
+        }
+        
+        if (newImages.length === 0) {
+            showToast('❌ Ingen bilder kunne behandles');
+            return;
         }
         
         const allImages = [...existingImages, ...newImages];
@@ -2304,7 +2361,7 @@ async function handleGalleryDropFiles(files) {
             galleryImages: allImages
         });
         
-        showToast(`✅ ${imageFiles.length} bilde(r) lastet opp!`);
+        showToast(`✅ ${newImages.length} bilde(r) lastet opp!`);
         loadGalleryPageImages();
     } catch (error) {
         console.error('Feil ved opplasting:', error);
@@ -2324,8 +2381,18 @@ async function handleGalleryPageUpload(e) {
         
         const newImages = [];
         for (const file of files) {
-            const base64 = await fileToBase64(file);
-            newImages.push(base64);
+            try {
+                const compressed = await compressAndConvertImage(file);
+                newImages.push(compressed);
+            } catch (err) {
+                console.warn(`Kunne ikke komprimere ${file.name}:`, err);
+                showToast(`⚠️ Kunne ikke komprimere ${file.name}`);
+            }
+        }
+        
+        if (newImages.length === 0) {
+            showToast('❌ Ingen bilder kunne behandles');
+            return;
         }
         
         const allImages = [...existingImages, ...newImages];
@@ -2334,13 +2401,12 @@ async function handleGalleryPageUpload(e) {
             galleryImages: allImages
         });
         
-        showToast(`✅ ${files.length} bilde(r) lastet opp!`);
+        showToast(`✅ ${newImages.length} bilde(r) lastet opp!`);
         loadGalleryPageImages();
     } catch (error) {
         console.error('Feil ved opplasting:', error);
         showToast('❌ Kunne ikke laste opp bilder');
     }
-    
     e.target.value = '';
 }
 
@@ -2550,8 +2616,8 @@ async function handleFarmMainImageUpload(e) {
     try {
         showToast('📤 Laster opp bilde...', 3000);
         
-        // Convert file to base64
-        const imageData = await fileToBase64(file);
+        // Compress image before uploading
+        const imageData = await compressAndConvertImage(file);
         
         // Save to Firestore
         await saveToFirestore('users', state.user.uid, {
