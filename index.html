@@ -237,6 +237,28 @@
                 <button id="addChecklistItemBtn" class="add-item-btn">+ Legg til punkt</button>
             </section>
 
+            <!-- Gallery View -->
+            <section id="galleryPageView" class="view">
+                <div class="view-header">
+                    <button id="backFromGallery" class="back-btn">← Tilbake</button>
+                    <h2>📸 Bildegalleri</h2>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="gallery-upload-area" id="galleryUploadArea">
+                    <div class="upload-icon">📤</div>
+                    <h3>Last opp bilder fra gården</h3>
+                    <p>Dra bilder hit eller klikk for å velge</p>
+                    <input type="file" id="galleryPageImageInput" multiple accept="image/*" hidden>
+                    <button id="selectGalleryImageBtn" class="upload-btn">Velg bilder</button>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div id="galleryPageGrid" class="gallery-page-grid">
+                    <p class="empty-gallery-text">Ingen bilder ennå</p>
+                </div>
+            </section>
+
             <!-- Emergency View -->
             <section id="emergencyView" class="view">
                 <div class="view-header">
