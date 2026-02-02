@@ -503,6 +503,18 @@ function applySettings() {
         farmName.textContent = state.settings.farmName;
     }
     
+    // Update farm identity card
+    const farmIdentityName = $('farmIdentityName');
+    if (farmIdentityName && state.settings?.farmName) {
+        farmIdentityName.textContent = state.settings.farmName;
+    }
+    
+    // Update farm image if custom image is set
+    const farmImage = $('farmImage');
+    if (farmImage && state.settings?.farmImageUrl) {
+        farmImage.src = state.settings.farmImageUrl;
+    }
+    
     // Update version display
     const versionInfo = $('versionInfo');
     if (versionInfo) {
