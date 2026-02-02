@@ -214,18 +214,28 @@ function userDoc(collection) {
 }
 
 async function saveToFirestore(collection, id, data) {
-    const col = userDoc(collection);
-    if (!col) return null;
+    if (!state.user) return null;
     
     const docData = { ...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    
     try {
-        if (id) {
-            await col.doc(id).set(docData, { merge: true });
+        if (collection === 'users') {
+            // Special case: save to user document directly
+            await db.collection('users').doc(id).set(docData, { merge: true });
             return id;
         } else {
-            docData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            const ref = await col.add(docData);
-            return ref.id;
+            // Normal case: save to user's subcollection
+            const col = userDoc(collection);
+            if (!col) return null;
+            
+            if (id) {
+                await col.doc(id).set(docData, { merge: true });
+                return id;
+            } else {
+                docData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                const ref = await col.add(docData);
+                return ref.id;
+            }
         }
     } catch (e) {
         console.error('Save error:', e);
@@ -256,6 +266,27 @@ async function loadCollection(collection) {
     } catch (e) {
         console.warn(`Could not load ${collection}:`, e.message);
         return [];
+    }
+}
+
+async function getFromFirestore(collection, id) {
+    if (!state.user) return null;
+    
+    try {
+        if (collection === 'users') {
+            // Special case: get user document directly
+            const doc = await db.collection('users').doc(id).get();
+            return doc.exists ? doc.data() : null;
+        } else {
+            // Normal case: get from user's subcollection
+            const col = userDoc(collection);
+            if (!col) return null;
+            const doc = await col.doc(id).get();
+            return doc.exists ? { id: doc.id, ...doc.data() } : null;
+        }
+    } catch (e) {
+        console.error(`Could not load ${collection}/${id}:`, e);
+        return null;
     }
 }
 
