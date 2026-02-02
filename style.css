@@ -673,7 +673,7 @@ a {
     margin-bottom: 24px;
     box-shadow: var(--shadow);
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.2fr;
     gap: 20px;
     animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
     position: relative;
@@ -730,48 +730,69 @@ a {
     box-shadow: var(--shadow-sm);
 }
 
-.weather-farm-column {
+.weather-farm-container {
     display: flex;
-    flex-direction: column;
     gap: 16px;
 }
 
+/* === Weather Widget - Upgraded === */
 .weather-widget {
-    background: rgba(255,255,255,0.5);
+    background: linear-gradient(135deg, #5ba3d8 0%, #3b82f6 100%);
     border-radius: var(--radius-lg);
-    padding: 14px;
+    padding: 20px;
+    flex: 0 0 35%;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.weather-widget::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
 }
 
 .weather-loading {
     text-align: center;
-    color: var(--text-muted);
+    color: rgba(255,255,255,0.9);
     font-size: 0.9rem;
 }
 
 .weather-main {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
 }
 
 .weather-icon {
-    font-size: 2rem;
+    font-size: 3rem;
     animation: float 3s ease-in-out infinite;
 }
 
 .weather-temp {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--primary);
+    font-size: 2.2rem;
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .weather-details {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
 }
 
 .weather-desc {
@@ -784,52 +805,236 @@ a {
     gap: 4px;
 }
 
-.farm-identity-compact {
+/* === Farm Image Section === */
+.farm-image-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.farm-main-image-container {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    aspect-ratio: 4/3;
+    cursor: pointer;
+    transition: all var(--transition-bounce);
+}
+
+.farm-main-image-container:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.farm-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.farm-main-image-container:hover .farm-main-image {
+    transform: scale(1.05);
+}
+
+.farm-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity var(--transition);
+    z-index: 2;
+}
+
+.farm-main-image-container:hover .farm-image-overlay {
+    opacity: 1;
+}
+
+.farm-image-overlay-text {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.farm-image-input {
+    display: none;
+}
+
+.farm-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text-muted);
+    text-align: center;
+    z-index: 1;
+}
+
+.farm-placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.farm-placeholder p {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* === Farm Image Gallery === */
+.farm-gallery-section {
+    margin-top: 24px;
+    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s backwards;
+}
+
+.farm-gallery-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(255,255,255,0.5);
-    border-radius: var(--radius-lg);
-    padding: 12px;
+    justify-content: space-between;
+    margin-bottom: 16px;
 }
 
-.farm-image-small {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius);
-    object-fit: cover;
-    box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-bounce);
-    border: 2px solid rgba(45,90,39,0.2);
-}
-
-.farm-identity-compact:hover .farm-image-small {
-    transform: scale(1.05) rotate(-2deg);
-    border-color: var(--primary);
-}
-
-.farm-info-small {
-    flex: 1;
-    min-width: 0;
-}
-
-.farm-info-small h3 {
-    font-size: 0.95rem;
+.farm-gallery-header h3 {
+    font-size: 1.15rem;
     font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.farm-info-small p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 500;
-    white-space: nowrap;
+.farm-upload-btn {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-bounce);
+    box-shadow: 0 4px 15px rgba(45, 90, 39, 0.3);
+}
+
+.farm-upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 90, 39, 0.4);
+}
+
+.farm-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--border);
+    transition: all var(--transition);
+}
+
+.farm-gallery-grid:hover {
+    border-color: var(--primary);
+    background: rgba(45, 90, 39, 0.02);
+}
+
+.farm-gallery-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
     overflow: hidden;
-    text-overflow: ellipsis;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all var(--transition-bounce);
+}
+
+.farm-gallery-item:hover {
+    transform: scale(1.08);
+    box-shadow: var(--shadow);
+}
+
+.farm-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.farm-gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+.farm-gallery-item-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.farm-gallery-item:hover .farm-gallery-item-overlay {
+    opacity: 1;
+}
+
+.farm-gallery-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.farm-gallery-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all var(--transition);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.farm-gallery-btn:hover {
+    transform: scale(1.15);
+}
+
+.farm-gallery-btn.delete:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.farm-gallery-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.farm-gallery-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.farm-gallery-empty p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.farm-gallery-empty-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
 }
 
 /* === Stats Row === */

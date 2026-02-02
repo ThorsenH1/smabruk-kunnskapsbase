@@ -79,21 +79,40 @@
                         <div id="dateDisplay" class="date-display">Laster...</div>
                         <div id="seasonDisplay" class="season-badge">🌸 Sesong</div>
                     </div>
-                    <div class="weather-farm-column">
+                    <div class="weather-farm-container">
                         <div id="weatherWidget" class="weather-widget">
                             <div class="weather-loading">🌤️ Henter vær...</div>
                         </div>
-                        <div class="farm-identity-compact" id="farmIdentityCard">
-                            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=300&h=300&fit=crop" 
-                                 alt="Småbruket" 
-                                 class="farm-image-small"
-                                 id="farmImage">
-                            <div class="farm-info-small">
-                                <h3 id="farmIdentityName">Mitt Småbruk</h3>
-                                <p>🏡 Småbruksdrift</p>
+                        <div class="farm-image-section">
+                            <div class="farm-main-image-container" id="farmMainImageContainer">
+                                <img id="farmMainImage" class="farm-main-image" src="" alt="Småbruket" style="display:none;">
+                                <div class="farm-placeholder" id="farmPlaceholder">
+                                    <div class="farm-placeholder-icon">📷</div>
+                                    <p>Klikk for å laste opp gårdsbilde</p>
+                                </div>
+                                <div class="farm-image-overlay">
+                                    <span class="farm-image-overlay-text">Klikk for å bytte bilde</span>
+                                </div>
                             </div>
+                            <input type="file" id="farmImageInput" class="farm-image-input" accept="image/*">
                         </div>
                     </div>
+                </div>
+
+                <!-- Farm Image Gallery -->
+                <div class="farm-gallery-section">
+                    <div class="farm-gallery-header">
+                        <h3>📸 Bildegalleri av småbruket</h3>
+                        <button id="farmGalleryUploadBtn" class="farm-upload-btn">+ Legg til bilde</button>
+                    </div>
+                    <div class="farm-gallery-grid" id="farmGalleryGrid">
+                        <div class="farm-gallery-empty">
+                            <div class="farm-gallery-empty-icon">🖼️</div>
+                            <p>Ingen bilder ennå</p>
+                            <p class="farm-gallery-empty-hint">Klikk "Legg til bilde" for å starte galleriet</p>
+                        </div>
+                    </div>
+                    <input type="file" id="farmGalleryInput" class="farm-image-input" accept="image/*" multiple>
                 </div>
 
                 <!-- Season Progress -->
