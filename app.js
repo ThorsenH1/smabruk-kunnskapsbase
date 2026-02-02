@@ -619,6 +619,7 @@ function renderWeather() {
     const { temp, code, wind } = state.weather;
     const icon = getWeatherIcon(code);
     const desc = getWeatherDesc(code);
+    const windMs = (wind / 3.6).toFixed(1);
     
     weatherEl.innerHTML = `
         <div class="weather-main">
@@ -627,7 +628,7 @@ function renderWeather() {
         </div>
         <div class="weather-details">
             <span class="weather-desc">${desc}</span>
-            <span class="weather-wind">💨 ${wind} km/t</span>
+            <span class="weather-wind">💨 ${windMs} m/s</span>
         </div>
     `;
 }
