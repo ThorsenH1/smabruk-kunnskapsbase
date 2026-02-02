@@ -379,6 +379,16 @@ async function doSignOut() {
     }
 }
 
+// ===== Helper: File to Base64 =====
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 // ===== Initialize App =====
 async function initApp() {
     const splash = $('splashScreen');
@@ -713,6 +723,7 @@ function setupEventListeners() {
     on('menuHome', 'click', () => { closeMenu(); showView('dashboardView'); });
     on('menuSettings', 'click', () => { closeMenu(); openSettingsModal(); });
     on('menuCategories', 'click', () => { closeMenu(); openCategoryModal(); });
+    on('menuGallery', 'click', () => { closeMenu(); openGalleryModal(); });
     on('menuSync', 'click', () => { closeMenu(); openSyncModal(); });
     on('menuExport', 'click', () => { closeMenu(); exportData(); });
     on('menuImport', 'click', () => { closeMenu(); importData(); });
@@ -748,6 +759,9 @@ function setupEventListeners() {
     on('getLocationBtn', 'click', getGeoLocation);
     
     on('closeAboutModal', 'click', closeAboutModal);
+    
+    on('closeGalleryModal', 'click', closeGalleryModal);
+    on('galleryImageInput', 'change', handleGalleryUpload);
     
     on('menuFeedback', 'click', openFeedbackModal);
     on('closeFeedbackModal', 'click', closeFeedbackModal);
@@ -2074,6 +2088,106 @@ function closeAboutModal() {
     }
 }
 
+// ===== Gallery Modal =====
+function openGalleryModal() {
+    const modal = $('galleryModal');
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+        loadGalleryImages();
+    }
+}
+
+function closeGalleryModal() {
+    const modal = $('galleryModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+async function loadGalleryImages() {
+    if (!state.user) return;
+    
+    const grid = $('galleryGrid');
+    if (!grid) return;
+    
+    try {
+        const userData = await getFromFirestore('users', state.user.uid);
+        const images = userData?.galleryImages || [];
+        
+        if (images.length === 0) {
+            grid.innerHTML = '<p class="empty-gallery-text">Ingen bilder ennå. Last opp bilder for å komme i gang!</p>';
+            return;
+        }
+        
+        grid.innerHTML = images.map((img, index) => `
+            <div class="gallery-item" data-index="${index}">
+                <img src="${img}" alt="Bilde ${index + 1}" onclick="openLightbox('${img}')">
+                <div class="gallery-item-overlay">
+                    <button class="gallery-item-delete" onclick="deleteGalleryImage(${index})" title="Slett">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Feil ved lasting av galleri:', error);
+        grid.innerHTML = '<p class="empty-gallery-text">Kunne ikke laste bilder</p>';
+    }
+}
+
+async function handleGalleryUpload(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !state.user) return;
+    
+    showToast('📷 Laster opp bilder...');
+    
+    try {
+        const userData = await getFromFirestore('users', state.user.uid);
+        const existingImages = userData?.galleryImages || [];
+        
+        const newImages = [];
+        for (const file of files) {
+            const base64 = await fileToBase64(file);
+            newImages.push(base64);
+        }
+        
+        const allImages = [...existingImages, ...newImages];
+        
+        await saveToFirestore('users', state.user.uid, {
+            galleryImages: allImages
+        });
+        
+        showToast(`✅ ${files.length} bilde(r) lastet opp!`);
+        loadGalleryImages();
+    } catch (error) {
+        console.error('Feil ved opplasting:', error);
+        showToast('❌ Kunne ikke laste opp bilder');
+    }
+    
+    e.target.value = '';
+}
+
+async function deleteGalleryImage(index) {
+    if (!state.user) return;
+    
+    try {
+        const userData = await getFromFirestore('users', state.user.uid);
+        const images = userData?.galleryImages || [];
+        
+        images.splice(index, 1);
+        
+        await saveToFirestore('users', state.user.uid, {
+            galleryImages: images
+        });
+        
+        showToast('🗑️ Bilde slettet');
+        loadGalleryImages();
+    } catch (error) {
+        console.error('Feil ved sletting:', error);
+        showToast('❌ Kunne ikke slette bilde');
+    }
+}
+
 // ===== Feedback Modal =====
 function openFeedbackModal() {
     const modal = $('feedbackModal');
@@ -2251,7 +2365,7 @@ async function handleFarmMainImageUpload(e) {
                 const placeholder = $('farmPlaceholder');
                 if (img && placeholder) {
                     img.src = imageData;
-                    img.style.display = 'block';
+                    img.classList.add('visible');
                     placeholder.style.display = 'none';
                 }
                 
@@ -2320,7 +2434,7 @@ async function loadFarmImages() {
             const placeholder = $('farmPlaceholder');
             if (img && placeholder) {
                 img.src = userData.farmMainImage;
-                img.style.display = 'block';
+                img.classList.add('visible');
                 placeholder.style.display = 'none';
             }
         }

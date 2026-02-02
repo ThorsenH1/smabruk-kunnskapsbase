@@ -79,40 +79,16 @@
                         <div id="dateDisplay" class="date-display">Laster...</div>
                         <div id="seasonDisplay" class="season-badge">🌸 Sesong</div>
                     </div>
-                    <div class="weather-farm-container">
-                        <div id="weatherWidget" class="weather-widget">
-                            <div class="weather-loading">🌤️ Henter vær...</div>
-                        </div>
-                        <div class="farm-image-section">
-                            <div class="farm-main-image-container" id="farmMainImageContainer">
-                                <img id="farmMainImage" class="farm-main-image" src="" alt="Småbruket" style="display:none;">
-                                <div class="farm-placeholder" id="farmPlaceholder">
-                                    <div class="farm-placeholder-icon">📷</div>
-                                    <p>Klikk for å laste opp gårdsbilde</p>
-                                </div>
-                                <div class="farm-image-overlay">
-                                    <span class="farm-image-overlay-text">Klikk for å bytte bilde</span>
-                                </div>
-                            </div>
-                            <input type="file" id="farmImageInput" class="farm-image-input" accept="image/*">
+                    <div id="weatherWidget" class="weather-widget">
+                        <div class="weather-loading">🌤️ Henter vær...</div>
+                    </div>
+                    <div class="farm-image-box" id="farmMainImageContainer">
+                        <img id="farmMainImage" class="farm-image" src="" alt="Småbruket">
+                        <div class="farm-placeholder" id="farmPlaceholder">
+                            <span>📷</span>
                         </div>
                     </div>
-                </div>
-
-                <!-- Farm Image Gallery -->
-                <div class="farm-gallery-section">
-                    <div class="farm-gallery-header">
-                        <h3>📸 Bildegalleri av småbruket</h3>
-                        <button id="farmGalleryUploadBtn" class="farm-upload-btn">+ Legg til bilde</button>
-                    </div>
-                    <div class="farm-gallery-grid" id="farmGalleryGrid">
-                        <div class="farm-gallery-empty">
-                            <div class="farm-gallery-empty-icon">🖼️</div>
-                            <p>Ingen bilder ennå</p>
-                            <p class="farm-gallery-empty-hint">Klikk "Legg til bilde" for å starte galleriet</p>
-                        </div>
-                    </div>
-                    <input type="file" id="farmGalleryInput" class="farm-image-input" accept="image/*" multiple>
+                    <input type="file" id="farmImageInput" class="farm-image-input" accept="image/*">
                 </div>
 
                 <!-- Season Progress -->
@@ -333,6 +309,7 @@
             <button id="menuHome" class="menu-item">🏠 Hjem</button>
             <button id="menuSettings" class="menu-item">⚙️ Innstillinger</button>
             <button id="menuCategories" class="menu-item">📁 Kategorier</button>
+            <button id="menuGallery" class="menu-item">📸 Bildegalleri</button>
             <hr class="menu-divider">
             <button id="menuSync" class="menu-item">☁️ Sync & Backup</button>
             <button id="menuExport" class="menu-item">📤 Eksporter data</button>
@@ -343,7 +320,7 @@
             <button id="menuAdminPanel" class="menu-item" style="display:none;">⚙️ Admin Panel</button>
         </div>
         <div class="menu-footer">
-            <p id="versionInfo">Versjon 4.10.0</p>
+            <p id="versionInfo">Versjon 5.1.0</p>
         </div>
     </nav>
 
@@ -601,7 +578,7 @@
             <div class="about-content">
                 <div class="about-logo">🏡</div>
                 <h3>Småbruk Kunnskapsbase</h3>
-                <p class="version" id="aboutVersion">Versjon 4.10.0</p>
+                <p class="version" id="aboutVersion">Versjon 5.1.0</p>
                 <p class="about-text">
                     En app for å samle og bevare kunnskap om ditt småbruk. 
                     Lagre tips, oppskrifter, vedlikeholdsrutiner og kontaktinformasjon 
@@ -674,6 +651,27 @@
         </div>
     </div>
 
+    <!-- Gallery Modal -->
+    <div id="galleryModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>📸 Bildegalleri</h2>
+                <button id="closeGalleryModal" class="close-btn">✕</button>
+            </div>
+            <div class="gallery-modal-content">
+                <div class="gallery-upload-section">
+                    <label for="galleryImageInput" class="gallery-upload-btn">
+                        ➕ Last opp bilder
+                    </label>
+                    <input type="file" id="galleryImageInput" accept="image/*" multiple hidden>
+                </div>
+                <div id="galleryGrid" class="gallery-grid">
+                    <p class="empty-gallery-text">Ingen bilder ennå. Last opp bilder for å komme i gang!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
@@ -688,6 +686,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <!-- App -->
-    <script src="app.js?v=4.1"></script>
+    <script src="app.js?v=5.1"></script>
 </body>
 </html>
