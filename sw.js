@@ -40,15 +40,25 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch - Serve from cache, fallback to network
+// Fetch - Network first for API/Firestore, cache for assets
 self.addEventListener('fetch', (event) => {
-    // Skip non-GET requests and non-http(s) requests
+    const url = new URL(event.request.url);
+    
+    // Let network-only for Firestore, Google APIs, etc.
+    if (url.hostname.includes('firestore') || 
+        url.hostname.includes('googleapis') ||
+        url.hostname.includes('google.com') ||
+        url.hostname.includes('gstatic.com')) {
+        // Don't intercept - let browser handle it
+        return;
+    }
+    
+    // Skip non-GET requests
     if (event.request.method !== 'GET') {
         return;
     }
     
-    // Skip chrome-extension and other non-http requests
-    const url = new URL(event.request.url);
+    // Skip non-http(s) requests
     if (!url.protocol.startsWith('http')) {
         return;
     }
@@ -95,4 +105,12 @@ self.addEventListener('fetch', (event) => {
                     });
             })
     );
+});
+
+// Message handler for client communication
+self.addEventListener('message', (event) => {
+    // Handle messages from clients without blocking
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

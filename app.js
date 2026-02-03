@@ -178,17 +178,10 @@ function launchConfetti() {
     setTimeout(() => container.remove(), 5000);
 }
 
-// ===== Firebase Configuration =====
-const firebaseConfig = {
-    apiKey: "AIzaSyDChsgGALPtC9kJ_h9Mh4Co9eP0EadpUlo",
-    authDomain: "smabruk-info-8abbe.firebaseapp.com",
-    projectId: "smabruk-info-8abbe",
-    storageBucket: "smabruk-info-8abbe.firebasestorage.app",
-    messagingSenderId: "895619707192",
-    appId: "1:895619707192:web:0f4e6acf82a97b656c11cd"
-};
-
-// Initialize Firebase
+// ===== Firebase Initialization =====
+// Configuration is loaded from firebase-config.js
+// Note: Firebase config is imported from separate file for better organization
+// Security is maintained through Firebase Security Rules and API restrictions
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -651,8 +644,27 @@ async function initApp() {
             if (mainApp) mainApp.classList.remove('hidden');
         }, 600);
         
+        // Register Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
+            navigator.serviceWorker.register('./sw.js')
+                .then((reg) => {
+                    console.log('✓ Service Worker registered');
+                    
+                    // Check for updates
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('ℹ️ App update available - refresh page to update');
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.warn('Service Worker registration failed:', error);
+                });
         }
         
     } catch (error) {
