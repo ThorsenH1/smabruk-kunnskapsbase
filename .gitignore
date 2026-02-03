@@ -1,4 +1,36 @@
+# Dependencies
 node_modules/
+
+# Firebase
 .firebase/
 firebase-debug.log
+.firebaserc
+
+# Build outputs
+dist/
+build/
+
+# Environment files (if you later add sensitive config)
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files
 package-lock.json
+yarn.lock
+
+# Note: firebase-config.js is intentionally NOT ignored
+# Firebase API keys for web are meant to be public
+# Security is handled via API restrictions and Firebase Security Rules
