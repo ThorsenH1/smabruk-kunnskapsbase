@@ -5,7 +5,157 @@
 // 🔥 EPIC ANIMATIONS EDITION 🔥
 // ==========================================
 
-const APP_VERSION = '5.0.0';
+const APP_VERSION = '5.1.0';
+
+// ==========================================
+// ATV MODUL - Batteri, Service & Vedlikehold
+// ==========================================
+
+// ===== ATV Default Data =====
+const DEFAULT_ATV_TOOLS = {
+    basis: [
+        { id: 'tool-1', name: 'Skrutrekker sett', status: 'ok', category: 'basis' },
+        { id: 'tool-2', name: 'Fastnøkler (metrisk)', status: 'ok', category: 'basis' },
+        { id: 'tool-3', name: 'Multimeter', status: 'ok', category: 'basis' },
+        { id: 'tool-4', name: 'Pumpe', status: 'ok', category: 'basis' },
+        { id: 'tool-5', name: 'Jekk', status: 'ok', category: 'basis' },
+        { id: 'tool-6', name: 'WD-40', status: 'ok', category: 'basis' },
+        { id: 'tool-7', name: 'Oljetrakt', status: 'ok', category: 'basis' },
+        { id: 'tool-8', name: 'Hansker', status: 'ok', category: 'basis' }
+    ],
+    avansert: [
+        { id: 'tool-9', name: 'Momentnøkkel', status: 'ok', category: 'avansert' },
+        { id: 'tool-10', name: 'Diagnose-verktøy', status: 'ok', category: 'avansert' },
+        { id: 'tool-11', name: 'Kompressjonstester', status: 'ok', category: 'avansert' },
+        { id: 'tool-12', name: 'Lageruttrekker', status: 'ok', category: 'avansert' },
+        { id: 'tool-13', name: 'Slangeklemme-tang', status: 'ok', category: 'avansert' },
+        { id: 'tool-14', name: 'Bremsevæske-tapper', status: 'ok', category: 'avansert' }
+    ]
+};
+
+const DEFAULT_ATV_PARTS = [
+    { id: 'part-1', name: 'Motorolje 10W-40', type: 'forbruk', quantity: 4, unit: 'liter', minQuantity: 2 },
+    { id: 'part-2', name: 'Oljefilter', type: 'reserve', quantity: 2, unit: 'stk', minQuantity: 1 },
+    { id: 'part-3', name: 'Luftfilter', type: 'reserve', quantity: 1, unit: 'stk', minQuantity: 1 },
+    { id: 'part-4', name: 'Tennplugg', type: 'reserve', quantity: 4, unit: 'stk', minQuantity: 2 },
+    { id: 'part-5', name: 'Bremseklosser (sett)', type: 'reserve', quantity: 1, unit: 'sett', minQuantity: 1 },
+    { id: 'part-6', name: 'Kjølervæske', type: 'forbruk', quantity: 2, unit: 'liter', minQuantity: 1 },
+    { id: 'part-7', name: 'Drivreim', type: 'reserve', quantity: 1, unit: 'stk', minQuantity: 1 },
+    { id: 'part-8', name: 'Sikringer (diverse)', type: 'reserve', quantity: 10, unit: 'stk', minQuantity: 5 }
+];
+
+// ===== Batteri Beregning Funksjoner =====
+/**
+ * Beregner sannsynlighet for start basert på batterispenning
+ * Blybatterier: 12.7V = 100%, 12.4V = 75%, 12.2V = 50%, 12.0V = 25%, <11.9V = 0%
+ * @param {number} voltage - Batterispenning i volt
+ * @param {number} daysAhead - Antall dager frem i tid
+ * @param {number} temperature - Temperatur i celsius (valgfritt)
+ * @returns {object} - { probability, recommendation, status }
+ */
+function calculateBatteryStartProbability(voltage, daysAhead = 0, temperature = 20) {
+    // Grunnberegning basert på spenning
+    let baseProb = 0;
+    
+    if (voltage >= 12.7) baseProb = 100;
+    else if (voltage >= 12.6) baseProb = 95;
+    else if (voltage >= 12.5) baseProb = 85;
+    else if (voltage >= 12.4) baseProb = 75;
+    else if (voltage >= 12.3) baseProb = 60;
+    else if (voltage >= 12.2) baseProb = 50;
+    else if (voltage >= 12.1) baseProb = 35;
+    else if (voltage >= 12.0) baseProb = 25;
+    else if (voltage >= 11.9) baseProb = 10;
+    else baseProb = 0;
+    
+    // Temperaturjustering (kulde reduserer batterikapasitet)
+    let tempFactor = 1;
+    if (temperature < 0) tempFactor = 0.6;
+    else if (temperature < 5) tempFactor = 0.7;
+    else if (temperature < 10) tempFactor = 0.85;
+    else if (temperature > 30) tempFactor = 0.95;
+    
+    // Tid-justering (batteriet mister lading over tid)
+    // Ca. 0.5-1% per dag i selvutlading for blybatteri
+    const dailyLoss = 0.8;
+    const timeFactor = Math.max(0, 1 - (daysAhead * dailyLoss / 100));
+    
+    // Endelig beregning
+    const probability = Math.round(Math.max(0, Math.min(100, baseProb * tempFactor * timeFactor)));
+    
+    // Anbefaling
+    let recommendation, status;
+    if (probability >= 90) {
+        recommendation = '✅ Batteriet er bra - ingen lading nødvendig';
+        status = 'good';
+    } else if (probability >= 70) {
+        recommendation = '⚠️ Vurder å lade snart';
+        status = 'warning';
+    } else if (probability >= 50) {
+        recommendation = '🔶 Anbefales å lade før bruk';
+        status = 'caution';
+    } else {
+        recommendation = '🔴 Lad batteriet NÅ!';
+        status = 'critical';
+    }
+    
+    return { probability, recommendation, status };
+}
+
+/**
+ * Estimerer batteritilstand basert på historiske målinger
+ * @param {Array} measurements - Array med { voltage, timestamp, temperature }
+ * @returns {object} - Analyse av batteriets helse
+ */
+function analyzeBatteryHealth(measurements) {
+    if (!measurements || measurements.length === 0) {
+        return { health: 'unknown', trend: 'unknown', message: 'Ingen målinger tilgjengelig' };
+    }
+    
+    // Sorter etter tid
+    const sorted = [...measurements].sort((a, b) => 
+        new Date(a.timestamp) - new Date(b.timestamp)
+    );
+    
+    // Beregn gjennomsnitt og trend
+    const voltages = sorted.map(m => m.voltage);
+    const avgVoltage = voltages.reduce((a, b) => a + b, 0) / voltages.length;
+    
+    // Trend: sammenlign første halvdel med andre halvdel
+    const half = Math.floor(voltages.length / 2);
+    const firstHalf = voltages.slice(0, half);
+    const secondHalf = voltages.slice(half);
+    
+    const avgFirst = firstHalf.length ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length : 0;
+    const avgSecond = secondHalf.length ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length : 0;
+    
+    let trend, health, message;
+    
+    if (avgSecond > avgFirst + 0.1) {
+        trend = 'improving';
+        message = '📈 Batteriets tilstand forbedres';
+    } else if (avgSecond < avgFirst - 0.2) {
+        trend = 'declining';
+        message = '📉 Batteriets tilstand forverres - vurder utskifting';
+    } else {
+        trend = 'stable';
+        message = '📊 Batteriets tilstand er stabil';
+    }
+    
+    if (avgVoltage >= 12.5) health = 'excellent';
+    else if (avgVoltage >= 12.3) health = 'good';
+    else if (avgVoltage >= 12.0) health = 'fair';
+    else health = 'poor';
+    
+    return { 
+        health, 
+        trend, 
+        message,
+        averageVoltage: avgVoltage.toFixed(2),
+        measurementCount: measurements.length,
+        lastMeasurement: sorted[sorted.length - 1]
+    };
+}
 
 // ===== Confetti Effect =====
 function launchConfetti() {
@@ -188,7 +338,18 @@ const state = {
     currentCategory: null,
     editingArticle: null,
     editingContact: null,
-    tempImages: []
+    tempImages: [],
+    // ATV State
+    atvProfiles: [],           // Liste over ATV-er
+    atvBatteries: [],          // Batterier med målinger
+    atvRepairs: [],            // Reparasjoner/service
+    atvTools: [],              // Verktøy
+    atvParts: [],              // Deler og forbruksvarer
+    currentAtv: null,          // Valgt ATV
+    currentRepair: null,       // Aktiv reparasjon som vises
+    editingAtv: null,          // ATV som redigeres
+    editingRepair: null,       // Reparasjon som redigeres
+    tempRepairImages: []       // Midlertidige bilder for reparasjon
 };
 
 // ===== DOM Helpers =====
@@ -476,6 +637,7 @@ async function initApp() {
         await loadAllData();
         await checkSeasonReset();
         setupEventListeners();
+        setupAtvEventListeners();  // Legg til ATV event listeners
         setupProfileButton();
         startClock();
         fetchWeather();
@@ -523,6 +685,30 @@ async function loadAllData() {
     state.articles = await loadCollection('articles');
     state.contacts = await loadCollection('contacts');
     state.checklists = await loadCollection('checklists');
+    
+    // ===== Laste ATV Data =====
+    state.atvProfiles = await loadCollection('atvProfiles');
+    state.atvBatteries = await loadCollection('atvBatteries');
+    state.atvRepairs = await loadCollection('atvRepairs');
+    state.atvTools = await loadCollection('atvTools');
+    state.atvParts = await loadCollection('atvParts');
+    
+    // Initialiser standard verktøy hvis tom
+    if (state.atvTools.length === 0) {
+        const allTools = [...DEFAULT_ATV_TOOLS.basis, ...DEFAULT_ATV_TOOLS.avansert];
+        for (const tool of allTools) {
+            await saveToFirestore('atvTools', tool.id, tool);
+            state.atvTools.push(tool);
+        }
+    }
+    
+    // Initialiser standard deler hvis tom
+    if (state.atvParts.length === 0) {
+        for (const part of DEFAULT_ATV_PARTS) {
+            await saveToFirestore('atvParts', part.id, part);
+            state.atvParts.push(part);
+        }
+    }
     
     const existingChecklistIds = state.checklists.map(c => c.id);
     for (const checklist of DEFAULT_CHECKLISTS) {
@@ -2857,6 +3043,1488 @@ window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
 window.openAdminPanel = openAdminPanel;
 window.closeAdminPanel = closeAdminPanel;
+
+// ==========================================
+// ATV MODUL - FULLSTENDIGE FUNKSJONER
+// ==========================================
+
+// ===== ATV View Management =====
+function showAtvView(viewId) {
+    // Skjul alle andre views først
+    $$('.view').forEach(v => v.classList.remove('active'));
+    
+    const view = $(viewId);
+    if (view) {
+        view.classList.add('active');
+    }
+    state.currentView = viewId;
+    
+    // Render basert på view
+    switch(viewId) {
+        case 'atvDashboardView':
+            renderAtvDashboard();
+            break;
+        case 'atvProfilesView':
+            renderAtvProfiles();
+            break;
+        case 'atvBatteryView':
+            renderAtvBatteryView();
+            break;
+        case 'atvRepairsView':
+            renderAtvRepairs();
+            break;
+        case 'atvToolsView':
+            renderAtvTools();
+            break;
+        case 'atvPartsView':
+            renderAtvParts();
+            break;
+    }
+}
+
+// ===== ATV Dashboard =====
+function renderAtvDashboard() {
+    const container = $('atvDashboardContent');
+    if (!container) return;
+    
+    const totalAtvs = state.atvProfiles.length;
+    const totalRepairs = state.atvRepairs.length;
+    const lowParts = state.atvParts.filter(p => p.quantity <= p.minQuantity).length;
+    const toolsNeedAttention = state.atvTools.filter(t => t.status !== 'ok').length;
+    
+    // Finn siste batterimålinger for hver ATV
+    const batteryWarnings = [];
+    state.atvProfiles.forEach(atv => {
+        const batteries = state.atvBatteries.filter(b => b.atvId === atv.id);
+        batteries.forEach(battery => {
+            if (battery.measurements && battery.measurements.length > 0) {
+                const lastMeasurement = battery.measurements[battery.measurements.length - 1];
+                const result = calculateBatteryStartProbability(lastMeasurement.voltage, 0, lastMeasurement.temperature || 20);
+                if (result.status !== 'good') {
+                    batteryWarnings.push({ atv, battery, result, lastMeasurement });
+                }
+            }
+        });
+    });
+    
+    container.innerHTML = `
+        <!-- ATV Stats -->
+        <div class="atv-stats-row">
+            <div class="atv-stat-card" onclick="showAtvView('atvProfilesView')">
+                <span class="atv-stat-icon">🏍️</span>
+                <span class="atv-stat-number">${totalAtvs}</span>
+                <span class="atv-stat-label">ATV-er</span>
+            </div>
+            <div class="atv-stat-card" onclick="showAtvView('atvRepairsView')">
+                <span class="atv-stat-icon">🔧</span>
+                <span class="atv-stat-number">${totalRepairs}</span>
+                <span class="atv-stat-label">Reparasjoner</span>
+            </div>
+            <div class="atv-stat-card ${lowParts > 0 ? 'warning' : ''}" onclick="showAtvView('atvPartsView')">
+                <span class="atv-stat-icon">📦</span>
+                <span class="atv-stat-number">${lowParts}</span>
+                <span class="atv-stat-label">Lave lagre</span>
+            </div>
+            <div class="atv-stat-card ${toolsNeedAttention > 0 ? 'warning' : ''}" onclick="showAtvView('atvToolsView')">
+                <span class="atv-stat-icon">🛠️</span>
+                <span class="atv-stat-number">${toolsNeedAttention}</span>
+                <span class="atv-stat-label">Verktøy-varsler</span>
+            </div>
+        </div>
+        
+        <!-- Battery Warnings -->
+        ${batteryWarnings.length > 0 ? `
+            <div class="atv-section atv-warnings-section">
+                <h3>🔋 Batterivarsler</h3>
+                <div class="atv-warnings-list">
+                    ${batteryWarnings.map(w => `
+                        <div class="atv-warning-card ${w.result.status}" onclick="openAtvBatteryDetail('${w.battery.id}')">
+                            <div class="atv-warning-icon">🔋</div>
+                            <div class="atv-warning-info">
+                                <strong>${escapeHtml(w.atv.name)} - ${escapeHtml(w.battery.name)}</strong>
+                                <span class="atv-warning-voltage">${w.lastMeasurement.voltage}V</span>
+                                <span class="atv-warning-prob">${w.result.probability}% startsannsynlighet</span>
+                            </div>
+                            <div class="atv-warning-action">${w.result.recommendation}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
+        
+        <!-- Quick Actions -->
+        <div class="atv-quick-actions">
+            <button class="atv-quick-btn" onclick="openAtvModal()">
+                <span>🏍️</span> Ny ATV
+            </button>
+            <button class="atv-quick-btn" onclick="openBatteryMeasurementModal()">
+                <span>🔋</span> Logg batteri
+            </button>
+            <button class="atv-quick-btn" onclick="openRepairModal()">
+                <span>🔧</span> Ny reparasjon
+            </button>
+            <button class="atv-quick-btn" onclick="showAtvView('atvPartsView')">
+                <span>📦</span> Deler
+            </button>
+        </div>
+        
+        <!-- Recent Repairs -->
+        <div class="atv-section">
+            <div class="atv-section-header">
+                <h3>🔧 Siste reparasjoner</h3>
+                <button class="atv-see-all-btn" onclick="showAtvView('atvRepairsView')">Se alle →</button>
+            </div>
+            <div class="atv-repairs-preview">
+                ${state.atvRepairs.slice(0, 3).map(repair => {
+                    const atv = state.atvProfiles.find(a => a.id === repair.atvId);
+                    return `
+                        <div class="atv-repair-preview-card" onclick="openRepairDetail('${repair.id}')">
+                            <div class="atv-repair-date">${formatDate(repair.date || repair.createdAt)}</div>
+                            <div class="atv-repair-title">${escapeHtml(repair.title)}</div>
+                            <div class="atv-repair-atv">${atv ? escapeHtml(atv.name) : 'Ukjent ATV'}</div>
+                        </div>
+                    `;
+                }).join('') || '<p class="empty-hint">Ingen reparasjoner ennå</p>'}
+            </div>
+        </div>
+        
+        <!-- ATV Overview -->
+        <div class="atv-section">
+            <div class="atv-section-header">
+                <h3>🏍️ Mine ATV-er</h3>
+                <button class="atv-see-all-btn" onclick="showAtvView('atvProfilesView')">Administrer →</button>
+            </div>
+            <div class="atv-profiles-preview">
+                ${state.atvProfiles.map(atv => `
+                    <div class="atv-profile-preview-card" onclick="openAtvDetail('${atv.id}')">
+                        <div class="atv-profile-icon">🏍️</div>
+                        <div class="atv-profile-info">
+                            <strong>${escapeHtml(atv.name)}</strong>
+                            <span>${escapeHtml(atv.model || '')} ${atv.year || ''}</span>
+                        </div>
+                    </div>
+                `).join('') || '<p class="empty-hint">Ingen ATV-er registrert</p>'}
+            </div>
+        </div>
+    `;
+}
+
+// ===== ATV Profiles =====
+function renderAtvProfiles() {
+    const list = $('atvProfilesList');
+    if (!list) return;
+    
+    if (state.atvProfiles.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🏍️</div>
+                <p>Ingen ATV-er registrert</p>
+                <button class="btn-primary" onclick="openAtvModal()">+ Legg til ATV</button>
+            </div>
+        `;
+    } else {
+        list.innerHTML = state.atvProfiles.map(atv => {
+            const repairCount = state.atvRepairs.filter(r => r.atvId === atv.id).length;
+            const batteries = state.atvBatteries.filter(b => b.atvId === atv.id);
+            
+            return `
+                <div class="atv-profile-card" onclick="openAtvDetail('${atv.id}')">
+                    <div class="atv-profile-header">
+                        <span class="atv-profile-icon">🏍️</span>
+                        <div class="atv-profile-main">
+                            <h3>${escapeHtml(atv.name)}</h3>
+                            <span class="atv-profile-model">${escapeHtml(atv.model || 'Ikke angitt')} ${atv.year || ''}</span>
+                        </div>
+                    </div>
+                    <div class="atv-profile-details">
+                        <div class="atv-detail-item">
+                            <span class="atv-detail-icon">⚙️</span>
+                            <span>${escapeHtml(atv.engineType || 'Ikke angitt')}</span>
+                        </div>
+                        <div class="atv-detail-item">
+                            <span class="atv-detail-icon">🔋</span>
+                            <span>${batteries.length} batteri${batteries.length !== 1 ? 'er' : ''}</span>
+                        </div>
+                        <div class="atv-detail-item">
+                            <span class="atv-detail-icon">🔧</span>
+                            <span>${repairCount} reparasjon${repairCount !== 1 ? 'er' : ''}</span>
+                        </div>
+                        <div class="atv-detail-item">
+                            <span class="atv-detail-icon">📅</span>
+                            <span>Service: ${atv.serviceInterval || 'Ikke satt'}${atv.serviceInterval ? ' km/timer' : ''}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+// ===== ATV Modal =====
+function openAtvModal(atv = null) {
+    state.editingAtv = atv;
+    
+    const modal = $('atvModal');
+    const title = $('atvModalTitle');
+    
+    if (title) title.textContent = atv ? 'Rediger ATV' : 'Ny ATV';
+    
+    // Fyll ut skjema
+    $('atvName').value = atv?.name || '';
+    $('atvModel').value = atv?.model || '';
+    $('atvYear').value = atv?.year || '';
+    $('atvEngineType').value = atv?.engineType || '';
+    $('atvBatteryType').value = atv?.batteryType || '';
+    $('atvServiceInterval').value = atv?.serviceInterval || '';
+    $('atvNotes').value = atv?.notes || '';
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closeAtvModal() {
+    const modal = $('atvModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+    state.editingAtv = null;
+}
+
+async function saveAtv(e) {
+    e.preventDefault();
+    
+    const data = {
+        name: $('atvName')?.value?.trim() || '',
+        model: $('atvModel')?.value?.trim() || '',
+        year: $('atvYear')?.value?.trim() || '',
+        engineType: $('atvEngineType')?.value?.trim() || '',
+        batteryType: $('atvBatteryType')?.value?.trim() || '',
+        serviceInterval: $('atvServiceInterval')?.value?.trim() || '',
+        notes: $('atvNotes')?.value?.trim() || ''
+    };
+    
+    if (!data.name) {
+        showToast('Gi ATV-en et navn', 'error');
+        return;
+    }
+    
+    try {
+        const id = await saveToFirestore('atvProfiles', state.editingAtv?.id, data);
+        
+        if (state.editingAtv) {
+            const idx = state.atvProfiles.findIndex(a => a.id === state.editingAtv.id);
+            if (idx >= 0) state.atvProfiles[idx] = { ...state.atvProfiles[idx], ...data };
+        } else {
+            state.atvProfiles.push({ id, ...data });
+        }
+        
+        closeAtvModal();
+        showToast(state.editingAtv ? 'ATV oppdatert ✓' : 'ATV lagt til ✓');
+        
+        if (state.currentView === 'atvProfilesView') {
+            renderAtvProfiles();
+        } else {
+            renderAtvDashboard();
+        }
+    } catch (error) {
+        console.error('Save ATV error:', error);
+        showToast('Kunne ikke lagre ATV', 'error');
+    }
+}
+
+function openAtvDetail(atvId) {
+    const atv = state.atvProfiles.find(a => a.id === atvId);
+    if (!atv) return;
+    
+    state.currentAtv = atv;
+    
+    const content = $('atvDetailContent');
+    if (!content) return;
+    
+    const batteries = state.atvBatteries.filter(b => b.atvId === atvId);
+    const repairs = state.atvRepairs.filter(r => r.atvId === atvId);
+    
+    content.innerHTML = `
+        <div class="atv-detail-header">
+            <div class="atv-detail-icon">🏍️</div>
+            <div class="atv-detail-title">
+                <h2>${escapeHtml(atv.name)}</h2>
+                <span class="atv-detail-subtitle">${escapeHtml(atv.model || '')} ${atv.year || ''}</span>
+            </div>
+            <div class="atv-detail-actions">
+                <button class="action-btn" onclick="openAtvModal(state.currentAtv)">✏️</button>
+                <button class="action-btn danger" onclick="confirmDeleteAtv()">🗑️</button>
+            </div>
+        </div>
+        
+        <div class="atv-detail-info">
+            <div class="atv-info-grid">
+                <div class="atv-info-item">
+                    <span class="atv-info-label">Motor</span>
+                    <span class="atv-info-value">${escapeHtml(atv.engineType || 'Ikke angitt')}</span>
+                </div>
+                <div class="atv-info-item">
+                    <span class="atv-info-label">Batteritype</span>
+                    <span class="atv-info-value">${escapeHtml(atv.batteryType || 'Ikke angitt')}</span>
+                </div>
+                <div class="atv-info-item">
+                    <span class="atv-info-label">Serviceintervall</span>
+                    <span class="atv-info-value">${atv.serviceInterval ? atv.serviceInterval + ' km/timer' : 'Ikke satt'}</span>
+                </div>
+                <div class="atv-info-item">
+                    <span class="atv-info-label">År</span>
+                    <span class="atv-info-value">${atv.year || 'Ikke angitt'}</span>
+                </div>
+            </div>
+            ${atv.notes ? `<div class="atv-notes"><strong>Notater:</strong><p>${escapeHtml(atv.notes)}</p></div>` : ''}
+        </div>
+        
+        <!-- Batterier -->
+        <div class="atv-detail-section">
+            <div class="atv-section-header">
+                <h3>🔋 Batterier</h3>
+                <button class="btn-small" onclick="openBatteryModal('${atvId}')">+ Legg til</button>
+            </div>
+            <div class="atv-batteries-list">
+                ${batteries.length === 0 ? '<p class="empty-hint">Ingen batterier registrert</p>' : 
+                    batteries.map(battery => {
+                        const lastMeasurement = battery.measurements && battery.measurements.length > 0 
+                            ? battery.measurements[battery.measurements.length - 1] 
+                            : null;
+                        const analysis = lastMeasurement 
+                            ? calculateBatteryStartProbability(lastMeasurement.voltage, 0, lastMeasurement.temperature || 20)
+                            : null;
+                        
+                        return `
+                            <div class="atv-battery-card ${analysis?.status || ''}" onclick="openAtvBatteryDetail('${battery.id}')">
+                                <div class="atv-battery-header">
+                                    <span class="atv-battery-icon">🔋</span>
+                                    <span class="atv-battery-name">${escapeHtml(battery.name)}</span>
+                                </div>
+                                ${lastMeasurement ? `
+                                    <div class="atv-battery-info">
+                                        <span class="atv-battery-voltage">${lastMeasurement.voltage}V</span>
+                                        <span class="atv-battery-prob">${analysis.probability}%</span>
+                                    </div>
+                                    <div class="atv-battery-recommendation">${analysis.recommendation}</div>
+                                ` : '<p class="empty-hint">Ingen målinger</p>'}
+                            </div>
+                        `;
+                    }).join('')
+                }
+            </div>
+        </div>
+        
+        <!-- Reparasjoner -->
+        <div class="atv-detail-section">
+            <div class="atv-section-header">
+                <h3>🔧 Reparasjonshistorikk</h3>
+                <button class="btn-small" onclick="openRepairModal('${atvId}')">+ Ny reparasjon</button>
+            </div>
+            <div class="atv-repairs-list">
+                ${repairs.length === 0 ? '<p class="empty-hint">Ingen reparasjoner registrert</p>' :
+                    repairs.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))
+                        .slice(0, 5)
+                        .map(repair => `
+                            <div class="atv-repair-card" onclick="openRepairDetail('${repair.id}')">
+                                <div class="atv-repair-header">
+                                    <span class="atv-repair-date">${formatDate(repair.date || repair.createdAt)}</span>
+                                    <span class="atv-repair-cost">${repair.cost ? repair.cost + ' kr' : ''}</span>
+                                </div>
+                                <div class="atv-repair-title">${escapeHtml(repair.title)}</div>
+                                <div class="atv-repair-summary">${escapeHtml((repair.description || '').substring(0, 100))}${(repair.description || '').length > 100 ? '...' : ''}</div>
+                                ${repair.images && repair.images.length > 0 ? '<span class="atv-has-images">🖼️ ' + repair.images.length + ' bilder</span>' : ''}
+                            </div>
+                        `).join('')
+                }
+            </div>
+        </div>
+    `;
+    
+    showAtvView('atvDetailView');
+}
+
+function confirmDeleteAtv() {
+    if (!state.currentAtv) return;
+    showConfirm(
+        'Slett ATV?',
+        `Er du sikker på at du vil slette "${state.currentAtv.name}"? Alle tilhørende batterier og reparasjoner vil også bli slettet.`,
+        deleteCurrentAtv,
+        '🗑️'
+    );
+}
+
+async function deleteCurrentAtv() {
+    if (!state.currentAtv) return;
+    
+    const atvId = state.currentAtv.id;
+    
+    // Slett tilhørende batterier
+    const batteries = state.atvBatteries.filter(b => b.atvId === atvId);
+    for (const battery of batteries) {
+        await deleteFromFirestore('atvBatteries', battery.id);
+    }
+    state.atvBatteries = state.atvBatteries.filter(b => b.atvId !== atvId);
+    
+    // Slett tilhørende reparasjoner
+    const repairs = state.atvRepairs.filter(r => r.atvId === atvId);
+    for (const repair of repairs) {
+        await deleteFromFirestore('atvRepairs', repair.id);
+    }
+    state.atvRepairs = state.atvRepairs.filter(r => r.atvId !== atvId);
+    
+    // Slett ATV
+    const success = await deleteFromFirestore('atvProfiles', atvId);
+    if (success) {
+        state.atvProfiles = state.atvProfiles.filter(a => a.id !== atvId);
+        state.currentAtv = null;
+        showToast('ATV slettet');
+        showAtvView('atvProfilesView');
+    } else {
+        showToast('Kunne ikke slette ATV', 'error');
+    }
+}
+
+// ===== Batteri Funksjoner =====
+function renderAtvBatteryView() {
+    const list = $('atvBatteryList');
+    if (!list) return;
+    
+    if (state.atvBatteries.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔋</div>
+                <p>Ingen batterier registrert</p>
+                <p class="empty-hint">Legg til en ATV først, deretter kan du registrere batterier</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Grupper batterier per ATV
+    const grouped = {};
+    state.atvBatteries.forEach(battery => {
+        const atv = state.atvProfiles.find(a => a.id === battery.atvId);
+        const atvName = atv ? atv.name : 'Ukjent ATV';
+        if (!grouped[atvName]) grouped[atvName] = [];
+        grouped[atvName].push(battery);
+    });
+    
+    list.innerHTML = Object.entries(grouped).map(([atvName, batteries]) => `
+        <div class="atv-battery-group">
+            <h3 class="atv-battery-group-title">🏍️ ${escapeHtml(atvName)}</h3>
+            ${batteries.map(battery => {
+                const lastMeasurement = battery.measurements && battery.measurements.length > 0 
+                    ? battery.measurements[battery.measurements.length - 1] 
+                    : null;
+                const analysis = lastMeasurement 
+                    ? calculateBatteryStartProbability(lastMeasurement.voltage, 0, lastMeasurement.temperature || 20)
+                    : null;
+                const health = battery.measurements && battery.measurements.length >= 2 
+                    ? analyzeBatteryHealth(battery.measurements) 
+                    : null;
+                
+                return `
+                    <div class="atv-battery-detail-card ${analysis?.status || ''}" onclick="openAtvBatteryDetail('${battery.id}')">
+                        <div class="atv-battery-main">
+                            <span class="atv-battery-icon">🔋</span>
+                            <div class="atv-battery-info">
+                                <strong>${escapeHtml(battery.name)}</strong>
+                                <span class="atv-battery-type">${escapeHtml(battery.type || 'Standard')}</span>
+                            </div>
+                        </div>
+                        ${lastMeasurement ? `
+                            <div class="atv-battery-stats">
+                                <div class="atv-battery-voltage-big">${lastMeasurement.voltage}V</div>
+                                <div class="atv-battery-prob-bar">
+                                    <div class="atv-battery-prob-fill" style="width: ${analysis.probability}%"></div>
+                                </div>
+                                <span class="atv-battery-prob-text">${analysis.probability}% startsannsynlighet</span>
+                            </div>
+                            <div class="atv-battery-analysis">
+                                ${analysis.recommendation}
+                                ${health ? `<br><small>${health.message}</small>` : ''}
+                            </div>
+                        ` : '<p class="empty-hint">Ingen målinger ennå</p>'}
+                        <div class="atv-battery-meta">
+                            <span>📊 ${battery.measurements?.length || 0} målinger</span>
+                            ${lastMeasurement ? `<span>📅 Sist målt: ${formatDate(lastMeasurement.timestamp)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `).join('');
+}
+
+function openBatteryModal(atvId = null) {
+    const modal = $('batteryModal');
+    const atvSelect = $('batteryAtvSelect');
+    
+    // Populer ATV-valg
+    if (atvSelect) {
+        atvSelect.innerHTML = state.atvProfiles.map(atv => 
+            `<option value="${atv.id}" ${atv.id === atvId ? 'selected' : ''}>${escapeHtml(atv.name)}</option>`
+        ).join('');
+    }
+    
+    $('batteryName').value = '';
+    $('batteryType').value = '';
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closeBatteryModal() {
+    const modal = $('batteryModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+async function saveBattery(e) {
+    e.preventDefault();
+    
+    const data = {
+        atvId: $('batteryAtvSelect')?.value || '',
+        name: $('batteryName')?.value?.trim() || 'Hovedbatteri',
+        type: $('batteryType')?.value?.trim() || '',
+        measurements: []
+    };
+    
+    if (!data.atvId) {
+        showToast('Velg en ATV', 'error');
+        return;
+    }
+    
+    try {
+        const id = await saveToFirestore('atvBatteries', null, data);
+        state.atvBatteries.push({ id, ...data });
+        
+        closeBatteryModal();
+        showToast('Batteri lagt til ✓');
+        
+        if (state.currentView === 'atvDetailView' && state.currentAtv) {
+            openAtvDetail(state.currentAtv.id);
+        } else {
+            renderAtvBatteryView();
+        }
+    } catch (error) {
+        showToast('Kunne ikke lagre batteri', 'error');
+    }
+}
+
+function openBatteryMeasurementModal(batteryId = null) {
+    const modal = $('batteryMeasurementModal');
+    const batterySelect = $('measurementBatterySelect');
+    
+    // Populer batteri-valg
+    if (batterySelect) {
+        batterySelect.innerHTML = state.atvBatteries.map(battery => {
+            const atv = state.atvProfiles.find(a => a.id === battery.atvId);
+            return `<option value="${battery.id}" ${battery.id === batteryId ? 'selected' : ''}>
+                ${atv ? escapeHtml(atv.name) + ' - ' : ''}${escapeHtml(battery.name)}
+            </option>`;
+        }).join('');
+    }
+    
+    // Sett standardverdier
+    $('measurementVoltage').value = '';
+    $('measurementTemperature').value = '';
+    $('measurementNotes').value = '';
+    
+    // Beregn og vis prediksjon
+    updateMeasurementPrediction();
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closeBatteryMeasurementModal() {
+    const modal = $('batteryMeasurementModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+function updateMeasurementPrediction() {
+    const voltage = parseFloat($('measurementVoltage')?.value) || 0;
+    const temperature = parseFloat($('measurementTemperature')?.value) || 20;
+    const predictionContainer = $('measurementPrediction');
+    
+    if (!predictionContainer) return;
+    
+    if (voltage < 10 || voltage > 15) {
+        predictionContainer.innerHTML = '<p class="prediction-hint">Skriv inn spenning for å se prediksjon</p>';
+        return;
+    }
+    
+    const today = calculateBatteryStartProbability(voltage, 0, temperature);
+    const in7Days = calculateBatteryStartProbability(voltage, 7, temperature);
+    
+    predictionContainer.innerHTML = `
+        <div class="prediction-result ${today.status}">
+            <div class="prediction-row">
+                <span class="prediction-label">I dag:</span>
+                <span class="prediction-value">${today.probability}%</span>
+            </div>
+            <div class="prediction-row">
+                <span class="prediction-label">Om 7 dager:</span>
+                <span class="prediction-value">${in7Days.probability}%</span>
+            </div>
+            <div class="prediction-recommendation">${today.recommendation}</div>
+        </div>
+    `;
+}
+
+async function saveBatteryMeasurement(e) {
+    e.preventDefault();
+    
+    const batteryId = $('measurementBatterySelect')?.value;
+    const voltage = parseFloat($('measurementVoltage')?.value);
+    const temperature = parseFloat($('measurementTemperature')?.value) || null;
+    const notes = $('measurementNotes')?.value?.trim() || '';
+    
+    if (!batteryId) {
+        showToast('Velg et batteri', 'error');
+        return;
+    }
+    
+    if (!voltage || voltage < 10 || voltage > 15) {
+        showToast('Ugyldig spenningsverdi', 'error');
+        return;
+    }
+    
+    const battery = state.atvBatteries.find(b => b.id === batteryId);
+    if (!battery) {
+        showToast('Batteri ikke funnet', 'error');
+        return;
+    }
+    
+    const measurement = {
+        voltage,
+        temperature,
+        notes,
+        timestamp: new Date().toISOString()
+    };
+    
+    if (!battery.measurements) battery.measurements = [];
+    battery.measurements.push(measurement);
+    
+    try {
+        await saveToFirestore('atvBatteries', batteryId, { measurements: battery.measurements });
+        
+        closeBatteryMeasurementModal();
+        showToast('Måling lagret ✓');
+        
+        // Oppdater visning
+        if (state.currentView === 'atvBatteryView') {
+            renderAtvBatteryView();
+        } else if (state.currentView === 'atvDashboardView') {
+            renderAtvDashboard();
+        }
+    } catch (error) {
+        showToast('Kunne ikke lagre måling', 'error');
+    }
+}
+
+function openAtvBatteryDetail(batteryId) {
+    const battery = state.atvBatteries.find(b => b.id === batteryId);
+    if (!battery) return;
+    
+    const atv = state.atvProfiles.find(a => a.id === battery.atvId);
+    const content = $('batteryDetailContent');
+    if (!content) return;
+    
+    const measurements = battery.measurements || [];
+    const lastMeasurement = measurements.length > 0 ? measurements[measurements.length - 1] : null;
+    const analysis = lastMeasurement 
+        ? calculateBatteryStartProbability(lastMeasurement.voltage, 0, lastMeasurement.temperature || 20)
+        : null;
+    const health = measurements.length >= 2 ? analyzeBatteryHealth(measurements) : null;
+    
+    content.innerHTML = `
+        <div class="battery-detail-header">
+            <div class="battery-detail-icon ${analysis?.status || ''}">🔋</div>
+            <div class="battery-detail-title">
+                <h2>${escapeHtml(battery.name)}</h2>
+                <span>${atv ? escapeHtml(atv.name) : 'Ukjent ATV'}</span>
+            </div>
+            <div class="battery-detail-actions">
+                <button class="action-btn" onclick="openBatteryMeasurementModal('${batteryId}')">📊 Ny måling</button>
+                <button class="action-btn danger" onclick="confirmDeleteBattery('${batteryId}')">🗑️</button>
+            </div>
+        </div>
+        
+        ${lastMeasurement ? `
+            <div class="battery-current-status ${analysis?.status || ''}">
+                <div class="battery-voltage-display">
+                    <span class="battery-voltage-value">${lastMeasurement.voltage}</span>
+                    <span class="battery-voltage-unit">V</span>
+                </div>
+                <div class="battery-probability-display">
+                    <div class="battery-prob-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle" stroke-dasharray="${analysis.probability}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage">${analysis.probability}%</text>
+                        </svg>
+                    </div>
+                    <span class="battery-prob-label">Startsannsynlighet</span>
+                </div>
+                <div class="battery-recommendation">${analysis.recommendation}</div>
+            </div>
+            
+            <div class="battery-predictions">
+                <h3>📊 Prediksjon</h3>
+                <div class="prediction-grid">
+                    <div class="prediction-item">
+                        <span class="prediction-time">I morgen</span>
+                        <span class="prediction-prob">${calculateBatteryStartProbability(lastMeasurement.voltage, 1, lastMeasurement.temperature || 20).probability}%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="prediction-time">Om 3 dager</span>
+                        <span class="prediction-prob">${calculateBatteryStartProbability(lastMeasurement.voltage, 3, lastMeasurement.temperature || 20).probability}%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="prediction-time">Om 7 dager</span>
+                        <span class="prediction-prob">${calculateBatteryStartProbability(lastMeasurement.voltage, 7, lastMeasurement.temperature || 20).probability}%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="prediction-time">Om 14 dager</span>
+                        <span class="prediction-prob">${calculateBatteryStartProbability(lastMeasurement.voltage, 14, lastMeasurement.temperature || 20).probability}%</span>
+                    </div>
+                </div>
+            </div>
+        ` : '<p class="empty-hint">Ingen målinger registrert ennå</p>'}
+        
+        ${health ? `
+            <div class="battery-health">
+                <h3>🏥 Batterihelse</h3>
+                <div class="health-info">
+                    <div class="health-stat">
+                        <span class="health-label">Tilstand</span>
+                        <span class="health-value ${health.health}">${health.health}</span>
+                    </div>
+                    <div class="health-stat">
+                        <span class="health-label">Trend</span>
+                        <span class="health-value">${health.trend === 'improving' ? '📈 Bedre' : health.trend === 'declining' ? '📉 Verre' : '📊 Stabil'}</span>
+                    </div>
+                    <div class="health-stat">
+                        <span class="health-label">Snitt spenning</span>
+                        <span class="health-value">${health.averageVoltage}V</span>
+                    </div>
+                </div>
+                <p class="health-message">${health.message}</p>
+            </div>
+        ` : ''}
+        
+        <div class="battery-history">
+            <h3>📜 Målehistorikk</h3>
+            <div class="measurement-list">
+                ${measurements.length === 0 ? '<p class="empty-hint">Ingen målinger</p>' :
+                    [...measurements].reverse().map(m => `
+                        <div class="measurement-item">
+                            <span class="measurement-date">${formatDate(m.timestamp)}</span>
+                            <span class="measurement-voltage">${m.voltage}V</span>
+                            ${m.temperature ? `<span class="measurement-temp">${m.temperature}°C</span>` : ''}
+                            ${m.notes ? `<span class="measurement-notes">${escapeHtml(m.notes)}</span>` : ''}
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>
+    `;
+    
+    showAtvView('batteryDetailView');
+}
+
+function confirmDeleteBattery(batteryId) {
+    showConfirm('Slett batteri?', 'Er du sikker på at du vil slette dette batteriet og alle målinger?', () => deleteBattery(batteryId), '🗑️');
+}
+
+async function deleteBattery(batteryId) {
+    const success = await deleteFromFirestore('atvBatteries', batteryId);
+    if (success) {
+        state.atvBatteries = state.atvBatteries.filter(b => b.id !== batteryId);
+        showToast('Batteri slettet');
+        showAtvView('atvBatteryView');
+    } else {
+        showToast('Kunne ikke slette batteri', 'error');
+    }
+}
+
+// ===== Reparasjoner =====
+function renderAtvRepairs() {
+    const list = $('atvRepairsList');
+    if (!list) return;
+    
+    // Filtrer og sorter
+    const filterAtv = $('repairFilterAtv')?.value || 'all';
+    const filterType = $('repairFilterType')?.value || 'all';
+    
+    let repairs = [...state.atvRepairs];
+    
+    if (filterAtv !== 'all') {
+        repairs = repairs.filter(r => r.atvId === filterAtv);
+    }
+    if (filterType !== 'all') {
+        repairs = repairs.filter(r => r.type === filterType);
+    }
+    
+    repairs.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+    
+    if (repairs.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔧</div>
+                <p>Ingen reparasjoner registrert</p>
+                <button class="btn-primary" onclick="openRepairModal()">+ Ny reparasjon</button>
+            </div>
+        `;
+    } else {
+        list.innerHTML = repairs.map(repair => {
+            const atv = state.atvProfiles.find(a => a.id === repair.atvId);
+            
+            return `
+                <div class="atv-repair-list-card" onclick="openRepairDetail('${repair.id}')">
+                    <div class="repair-card-header">
+                        <span class="repair-date">${formatDate(repair.date || repair.createdAt)}</span>
+                        <span class="repair-type-badge ${repair.type || 'service'}">${getRepairTypeLabel(repair.type)}</span>
+                    </div>
+                    <div class="repair-card-body">
+                        <h4>${escapeHtml(repair.title)}</h4>
+                        <span class="repair-atv">🏍️ ${atv ? escapeHtml(atv.name) : 'Ukjent ATV'}</span>
+                    </div>
+                    <div class="repair-card-footer">
+                        ${repair.cost ? `<span class="repair-cost">💰 ${repair.cost} kr</span>` : ''}
+                        ${repair.workTime ? `<span class="repair-time">⏱️ ${repair.workTime}</span>` : ''}
+                        ${repair.images && repair.images.length > 0 ? `<span class="repair-images">🖼️ ${repair.images.length}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function getRepairTypeLabel(type) {
+    const types = {
+        service: '🔧 Service',
+        repair: '🛠️ Reparasjon',
+        upgrade: '⬆️ Oppgradering',
+        inspection: '🔍 Inspeksjon',
+        emergency: '🆘 Akutt'
+    };
+    return types[type] || '🔧 Service';
+}
+
+function openRepairModal(atvId = null) {
+    state.editingRepair = null;
+    state.tempRepairImages = [];
+    
+    const modal = $('repairModal');
+    const atvSelect = $('repairAtvSelect');
+    
+    // Populer ATV-valg
+    if (atvSelect) {
+        atvSelect.innerHTML = state.atvProfiles.map(atv => 
+            `<option value="${atv.id}" ${atv.id === atvId ? 'selected' : ''}>${escapeHtml(atv.name)}</option>`
+        ).join('');
+    }
+    
+    // Nullstill skjema
+    $('repairTitle').value = '';
+    $('repairType').value = 'service';
+    $('repairDate').value = new Date().toISOString().split('T')[0];
+    $('repairDescription').value = '';
+    $('repairParts').value = '';
+    $('repairTools').value = '';
+    $('repairWorkTime').value = '';
+    $('repairCost').value = '';
+    
+    renderRepairImagePreviews();
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closeRepairModal() {
+    const modal = $('repairModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+    state.editingRepair = null;
+    state.tempRepairImages = [];
+}
+
+function renderRepairImagePreviews() {
+    const list = $('repairImagePreviewList');
+    if (!list) return;
+    
+    list.innerHTML = state.tempRepairImages.map((img, i) => `
+        <div class="image-preview">
+            <img src="${img}" alt="Bilde ${i+1}">
+            <button type="button" class="remove-img" onclick="removeRepairImage(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+function removeRepairImage(index) {
+    state.tempRepairImages.splice(index, 1);
+    renderRepairImagePreviews();
+}
+
+function handleRepairImageSelect(e) {
+    const files = e.target.files;
+    if (!files?.length) return;
+    
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            compressImage(ev.target.result, (compressed) => {
+                state.tempRepairImages.push(compressed);
+                renderRepairImagePreviews();
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    e.target.value = '';
+}
+
+async function saveRepair(e) {
+    e.preventDefault();
+    
+    const data = {
+        atvId: $('repairAtvSelect')?.value || '',
+        title: $('repairTitle')?.value?.trim() || '',
+        type: $('repairType')?.value || 'service',
+        date: $('repairDate')?.value || new Date().toISOString().split('T')[0],
+        description: $('repairDescription')?.value?.trim() || '',
+        partsUsed: $('repairParts')?.value?.trim() || '',
+        toolsUsed: $('repairTools')?.value?.trim() || '',
+        workTime: $('repairWorkTime')?.value?.trim() || '',
+        cost: $('repairCost')?.value?.trim() || '',
+        images: state.tempRepairImages
+    };
+    
+    if (!data.atvId) {
+        showToast('Velg en ATV', 'error');
+        return;
+    }
+    if (!data.title) {
+        showToast('Gi reparasjonen en tittel', 'error');
+        return;
+    }
+    
+    try {
+        const id = await saveToFirestore('atvRepairs', state.editingRepair?.id, data);
+        
+        if (state.editingRepair) {
+            const idx = state.atvRepairs.findIndex(r => r.id === state.editingRepair.id);
+            if (idx >= 0) state.atvRepairs[idx] = { ...state.atvRepairs[idx], ...data };
+        } else {
+            state.atvRepairs.push({ id, ...data });
+        }
+        
+        closeRepairModal();
+        showToast('Reparasjon lagret ✓');
+        
+        if (state.currentView === 'atvRepairsView') {
+            renderAtvRepairs();
+        } else if (state.currentView === 'atvDashboardView') {
+            renderAtvDashboard();
+        } else if (state.currentView === 'atvDetailView' && state.currentAtv) {
+            openAtvDetail(state.currentAtv.id);
+        }
+    } catch (error) {
+        showToast('Kunne ikke lagre reparasjon', 'error');
+    }
+}
+
+function openRepairDetail(repairId) {
+    const repair = state.atvRepairs.find(r => r.id === repairId);
+    if (!repair) return;
+    
+    state.currentRepair = repair;
+    const atv = state.atvProfiles.find(a => a.id === repair.atvId);
+    
+    const content = $('repairDetailContent');
+    if (!content) return;
+    
+    content.innerHTML = `
+        <div class="repair-detail-header">
+            <div class="repair-detail-meta">
+                <span class="repair-detail-date">${formatDate(repair.date || repair.createdAt)}</span>
+                <span class="repair-type-badge ${repair.type || 'service'}">${getRepairTypeLabel(repair.type)}</span>
+            </div>
+            <h2>${escapeHtml(repair.title)}</h2>
+            <span class="repair-detail-atv">🏍️ ${atv ? escapeHtml(atv.name) : 'Ukjent ATV'}</span>
+            <div class="repair-detail-actions">
+                <button class="action-btn" onclick="editRepair('${repairId}')">✏️</button>
+                <button class="action-btn danger" onclick="confirmDeleteRepair('${repairId}')">🗑️</button>
+            </div>
+        </div>
+        
+        <div class="repair-detail-body">
+            ${repair.description ? `
+                <div class="repair-section">
+                    <h3>📝 Beskrivelse</h3>
+                    <p>${escapeHtml(repair.description).replace(/\n/g, '<br>')}</p>
+                </div>
+            ` : ''}
+            
+            <div class="repair-info-grid">
+                ${repair.partsUsed ? `
+                    <div class="repair-info-item">
+                        <span class="repair-info-icon">📦</span>
+                        <div class="repair-info-content">
+                            <strong>Deler brukt</strong>
+                            <span>${escapeHtml(repair.partsUsed)}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                ${repair.toolsUsed ? `
+                    <div class="repair-info-item">
+                        <span class="repair-info-icon">🛠️</span>
+                        <div class="repair-info-content">
+                            <strong>Verktøy brukt</strong>
+                            <span>${escapeHtml(repair.toolsUsed)}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                ${repair.workTime ? `
+                    <div class="repair-info-item">
+                        <span class="repair-info-icon">⏱️</span>
+                        <div class="repair-info-content">
+                            <strong>Arbeidstid</strong>
+                            <span>${escapeHtml(repair.workTime)}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                ${repair.cost ? `
+                    <div class="repair-info-item">
+                        <span class="repair-info-icon">💰</span>
+                        <div class="repair-info-content">
+                            <strong>Kostnad</strong>
+                            <span>${repair.cost} kr</span>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+            
+            ${repair.images && repair.images.length > 0 ? `
+                <div class="repair-section">
+                    <h3>🖼️ Bilder (${repair.images.length})</h3>
+                    <div class="repair-images-grid">
+                        ${repair.images.map((img, i) => `
+                            <img src="${img}" alt="Bilde ${i+1}" onclick="openLightbox('${img}')" class="repair-image">
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    showAtvView('repairDetailView');
+}
+
+function editRepair(repairId) {
+    const repair = state.atvRepairs.find(r => r.id === repairId);
+    if (!repair) return;
+    
+    state.editingRepair = repair;
+    state.tempRepairImages = repair.images ? [...repair.images] : [];
+    
+    const modal = $('repairModal');
+    const atvSelect = $('repairAtvSelect');
+    
+    // Populer ATV-valg
+    if (atvSelect) {
+        atvSelect.innerHTML = state.atvProfiles.map(atv => 
+            `<option value="${atv.id}" ${atv.id === repair.atvId ? 'selected' : ''}>${escapeHtml(atv.name)}</option>`
+        ).join('');
+    }
+    
+    // Fyll ut skjema
+    $('repairTitle').value = repair.title || '';
+    $('repairType').value = repair.type || 'service';
+    $('repairDate').value = repair.date || '';
+    $('repairDescription').value = repair.description || '';
+    $('repairParts').value = repair.partsUsed || '';
+    $('repairTools').value = repair.toolsUsed || '';
+    $('repairWorkTime').value = repair.workTime || '';
+    $('repairCost').value = repair.cost || '';
+    
+    renderRepairImagePreviews();
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function confirmDeleteRepair(repairId) {
+    showConfirm('Slett reparasjon?', 'Er du sikker på at du vil slette denne reparasjonen?', () => deleteRepair(repairId), '🗑️');
+}
+
+async function deleteRepair(repairId) {
+    const success = await deleteFromFirestore('atvRepairs', repairId);
+    if (success) {
+        state.atvRepairs = state.atvRepairs.filter(r => r.id !== repairId);
+        showToast('Reparasjon slettet');
+        showAtvView('atvRepairsView');
+    } else {
+        showToast('Kunne ikke slette reparasjon', 'error');
+    }
+}
+
+// ===== Verktøy =====
+function renderAtvTools() {
+    const list = $('atvToolsList');
+    if (!list) return;
+    
+    const basisTools = state.atvTools.filter(t => t.category === 'basis');
+    const advancedTools = state.atvTools.filter(t => t.category === 'avansert');
+    
+    const statusIcon = (status) => {
+        switch(status) {
+            case 'ok': return '✅';
+            case 'mangler': return '❌';
+            case 'slitt': return '⚠️';
+            case 'byttes': return '🔴';
+            default: return '✅';
+        }
+    };
+    
+    const statusClass = (status) => {
+        switch(status) {
+            case 'mangler': return 'missing';
+            case 'slitt': return 'worn';
+            case 'byttes': return 'replace';
+            default: return 'ok';
+        }
+    };
+    
+    list.innerHTML = `
+        <div class="tools-section">
+            <h3>🔧 Basisverktøy</h3>
+            <div class="tools-grid">
+                ${basisTools.map(tool => `
+                    <div class="tool-card ${statusClass(tool.status)}" onclick="openToolModal('${tool.id}')">
+                        <span class="tool-status">${statusIcon(tool.status)}</span>
+                        <span class="tool-name">${escapeHtml(tool.name)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="tools-section">
+            <h3>⚙️ Avansert verktøy</h3>
+            <div class="tools-grid">
+                ${advancedTools.map(tool => `
+                    <div class="tool-card ${statusClass(tool.status)}" onclick="openToolModal('${tool.id}')">
+                        <span class="tool-status">${statusIcon(tool.status)}</span>
+                        <span class="tool-name">${escapeHtml(tool.name)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <button class="btn-primary full-width" onclick="openNewToolModal()">+ Legg til verktøy</button>
+    `;
+}
+
+function openToolModal(toolId) {
+    const tool = state.atvTools.find(t => t.id === toolId);
+    if (!tool) return;
+    
+    const modal = $('toolModal');
+    
+    $('toolName').value = tool.name;
+    $('toolCategory').value = tool.category;
+    $('toolStatus').value = tool.status;
+    $('toolModalTitle').textContent = 'Rediger verktøy';
+    
+    modal.dataset.toolId = toolId;
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function openNewToolModal() {
+    const modal = $('toolModal');
+    
+    $('toolName').value = '';
+    $('toolCategory').value = 'basis';
+    $('toolStatus').value = 'ok';
+    $('toolModalTitle').textContent = 'Nytt verktøy';
+    
+    delete modal.dataset.toolId;
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closeToolModal() {
+    const modal = $('toolModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+async function saveTool(e) {
+    e.preventDefault();
+    
+    const modal = $('toolModal');
+    const toolId = modal?.dataset.toolId;
+    
+    const data = {
+        name: $('toolName')?.value?.trim() || '',
+        category: $('toolCategory')?.value || 'basis',
+        status: $('toolStatus')?.value || 'ok'
+    };
+    
+    if (!data.name) {
+        showToast('Gi verktøyet et navn', 'error');
+        return;
+    }
+    
+    try {
+        if (toolId) {
+            // Oppdater eksisterende
+            await saveToFirestore('atvTools', toolId, data);
+            const idx = state.atvTools.findIndex(t => t.id === toolId);
+            if (idx >= 0) state.atvTools[idx] = { ...state.atvTools[idx], ...data };
+        } else {
+            // Nytt verktøy
+            const id = 'tool-' + Date.now();
+            await saveToFirestore('atvTools', id, { id, ...data });
+            state.atvTools.push({ id, ...data });
+        }
+        
+        closeToolModal();
+        showToast('Verktøy lagret ✓');
+        renderAtvTools();
+    } catch (error) {
+        showToast('Kunne ikke lagre verktøy', 'error');
+    }
+}
+
+// ===== Deler & Forbruk =====
+function renderAtvParts() {
+    const list = $('atvPartsList');
+    if (!list) return;
+    
+    const reserveParts = state.atvParts.filter(p => p.type === 'reserve');
+    const consumables = state.atvParts.filter(p => p.type === 'forbruk');
+    
+    const renderPartCard = (part) => {
+        const isLow = part.quantity <= part.minQuantity;
+        return `
+            <div class="part-card ${isLow ? 'low-stock' : ''}" onclick="openPartModal('${part.id}')">
+                <div class="part-info">
+                    <span class="part-name">${escapeHtml(part.name)}</span>
+                    <span class="part-quantity">${part.quantity} ${part.unit}</span>
+                </div>
+                ${isLow ? '<span class="part-warning">⚠️ Lavt lager!</span>' : ''}
+            </div>
+        `;
+    };
+    
+    list.innerHTML = `
+        <div class="parts-section">
+            <h3>🔩 Reservedeler</h3>
+            <div class="parts-grid">
+                ${reserveParts.map(renderPartCard).join('') || '<p class="empty-hint">Ingen reservedeler</p>'}
+            </div>
+        </div>
+        
+        <div class="parts-section">
+            <h3>🛢️ Forbruksvarer</h3>
+            <div class="parts-grid">
+                ${consumables.map(renderPartCard).join('') || '<p class="empty-hint">Ingen forbruksvarer</p>'}
+            </div>
+        </div>
+        
+        <button class="btn-primary full-width" onclick="openNewPartModal()">+ Legg til del/vare</button>
+    `;
+}
+
+function openPartModal(partId) {
+    const part = state.atvParts.find(p => p.id === partId);
+    if (!part) return;
+    
+    const modal = $('partModal');
+    
+    $('partName').value = part.name;
+    $('partType').value = part.type;
+    $('partQuantity').value = part.quantity;
+    $('partUnit').value = part.unit;
+    $('partMinQuantity').value = part.minQuantity;
+    $('partModalTitle').textContent = 'Rediger del';
+    
+    modal.dataset.partId = partId;
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function openNewPartModal() {
+    const modal = $('partModal');
+    
+    $('partName').value = '';
+    $('partType').value = 'reserve';
+    $('partQuantity').value = '';
+    $('partUnit').value = 'stk';
+    $('partMinQuantity').value = '1';
+    $('partModalTitle').textContent = 'Ny del/vare';
+    
+    delete modal.dataset.partId;
+    
+    if (modal) {
+        modal.classList.add('active');
+        updateBodyOverflow();
+    }
+}
+
+function closePartModal() {
+    const modal = $('partModal');
+    if (modal) {
+        modal.classList.remove('active');
+        updateBodyOverflow();
+    }
+}
+
+async function savePart(e) {
+    e.preventDefault();
+    
+    const modal = $('partModal');
+    const partId = modal?.dataset.partId;
+    
+    const data = {
+        name: $('partName')?.value?.trim() || '',
+        type: $('partType')?.value || 'reserve',
+        quantity: parseInt($('partQuantity')?.value) || 0,
+        unit: $('partUnit')?.value?.trim() || 'stk',
+        minQuantity: parseInt($('partMinQuantity')?.value) || 1
+    };
+    
+    if (!data.name) {
+        showToast('Gi delen et navn', 'error');
+        return;
+    }
+    
+    try {
+        if (partId) {
+            await saveToFirestore('atvParts', partId, data);
+            const idx = state.atvParts.findIndex(p => p.id === partId);
+            if (idx >= 0) state.atvParts[idx] = { ...state.atvParts[idx], ...data };
+        } else {
+            const id = 'part-' + Date.now();
+            await saveToFirestore('atvParts', id, { id, ...data });
+            state.atvParts.push({ id, ...data });
+        }
+        
+        closePartModal();
+        showToast('Del/vare lagret ✓');
+        renderAtvParts();
+    } catch (error) {
+        showToast('Kunne ikke lagre del', 'error');
+    }
+}
+
+// ===== ATV Event Listeners Setup =====
+function setupAtvEventListeners() {
+    // ATV navigasjon
+    on('atvNavDashboard', 'click', () => showAtvView('atvDashboardView'));
+    on('atvNavProfiles', 'click', () => showAtvView('atvProfilesView'));
+    on('atvNavBattery', 'click', () => showAtvView('atvBatteryView'));
+    on('atvNavRepairs', 'click', () => showAtvView('atvRepairsView'));
+    on('atvNavTools', 'click', () => showAtvView('atvToolsView'));
+    on('atvNavParts', 'click', () => showAtvView('atvPartsView'));
+    
+    // ATV tilbake-knapper
+    on('backFromAtvProfiles', 'click', () => showAtvView('atvDashboardView'));
+    on('backFromAtvDetail', 'click', () => showAtvView('atvProfilesView'));
+    on('backFromAtvBattery', 'click', () => showAtvView('atvDashboardView'));
+    on('backFromBatteryDetail', 'click', () => showAtvView('atvBatteryView'));
+    on('backFromAtvRepairs', 'click', () => showAtvView('atvDashboardView'));
+    on('backFromRepairDetail', 'click', () => showAtvView('atvRepairsView'));
+    on('backFromAtvTools', 'click', () => showAtvView('atvDashboardView'));
+    on('backFromAtvParts', 'click', () => showAtvView('atvDashboardView'));
+    
+    // ATV knapper
+    on('addAtvBtn', 'click', () => openAtvModal());
+    on('addBatteryBtn', 'click', () => openBatteryModal());
+    on('addRepairBtn', 'click', () => openRepairModal());
+    
+    // ATV Modaler
+    on('closeAtvModal', 'click', closeAtvModal);
+    on('atvForm', 'submit', saveAtv);
+    
+    on('closeBatteryModal', 'click', closeBatteryModal);
+    on('batteryForm', 'submit', saveBattery);
+    
+    on('closeBatteryMeasurementModal', 'click', closeBatteryMeasurementModal);
+    on('batteryMeasurementForm', 'submit', saveBatteryMeasurement);
+    on('measurementVoltage', 'input', updateMeasurementPrediction);
+    on('measurementTemperature', 'input', updateMeasurementPrediction);
+    
+    on('closeRepairModal', 'click', closeRepairModal);
+    on('repairForm', 'submit', saveRepair);
+    on('repairAddImageBtn', 'click', () => $('repairImageInput')?.click());
+    on('repairCameraBtn', 'click', () => $('repairCameraInput')?.click());
+    on('repairImageInput', 'change', handleRepairImageSelect);
+    on('repairCameraInput', 'change', handleRepairImageSelect);
+    
+    on('closeToolModal', 'click', closeToolModal);
+    on('toolForm', 'submit', saveTool);
+    
+    on('closePartModal', 'click', closePartModal);
+    on('partForm', 'submit', savePart);
+    
+    // Filtrering
+    on('repairFilterAtv', 'change', renderAtvRepairs);
+    on('repairFilterType', 'change', renderAtvRepairs);
+}
+
+// ===== Eksporter ATV-funksjoner globalt =====
+window.showAtvView = showAtvView;
+window.openAtvModal = openAtvModal;
+window.openAtvDetail = openAtvDetail;
+window.openBatteryModal = openBatteryModal;
+window.openBatteryMeasurementModal = openBatteryMeasurementModal;
+window.openAtvBatteryDetail = openAtvBatteryDetail;
+window.confirmDeleteBattery = confirmDeleteBattery;
+window.openRepairModal = openRepairModal;
+window.openRepairDetail = openRepairDetail;
+window.editRepair = editRepair;
+window.confirmDeleteRepair = confirmDeleteRepair;
+window.removeRepairImage = removeRepairImage;
+window.openToolModal = openToolModal;
+window.openNewToolModal = openNewToolModal;
+window.openPartModal = openPartModal;
+window.openNewPartModal = openNewPartModal;
 
 // ===== Start App =====
 document.addEventListener('DOMContentLoaded', async () => {

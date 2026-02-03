@@ -124,6 +124,9 @@
                     <button id="quickChecklistBtn" class="quick-btn">
                         <span>✅</span> Sjekklister
                     </button>
+                    <button id="quickAtvBtn" class="quick-btn atv-btn" onclick="showAtvView('atvDashboardView')">
+                        <span>🏍️</span> ATV
+                    </button>
                     <button id="quickEmergencyBtn" class="quick-btn danger">
                         <span>🆘</span> Nødhjelp
                     </button>
@@ -293,6 +296,115 @@
                 </div>
                 <div id="allFavoritesList" class="articles-list"></div>
             </section>
+
+            <!-- ==========================================
+                 ATV MODUL - VIEWS
+                 ========================================== -->
+            
+            <!-- ATV Dashboard View -->
+            <section id="atvDashboardView" class="view">
+                <div class="view-header atv-header">
+                    <button class="back-btn" onclick="showView('dashboardView')">← Tilbake</button>
+                    <h2>🏍️ ATV Senter</h2>
+                </div>
+                <div class="atv-nav-tabs">
+                    <button id="atvNavDashboard" class="atv-tab active">📊 Oversikt</button>
+                    <button id="atvNavProfiles" class="atv-tab">🏍️ ATV-er</button>
+                    <button id="atvNavBattery" class="atv-tab">🔋 Batteri</button>
+                    <button id="atvNavRepairs" class="atv-tab">🔧 Service</button>
+                    <button id="atvNavTools" class="atv-tab">🛠️ Verktøy</button>
+                    <button id="atvNavParts" class="atv-tab">📦 Deler</button>
+                </div>
+                <div id="atvDashboardContent" class="atv-dashboard-content"></div>
+            </section>
+
+            <!-- ATV Profiles View -->
+            <section id="atvProfilesView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvProfiles" class="back-btn">← Tilbake</button>
+                    <h2>🏍️ Mine ATV-er</h2>
+                    <button id="addAtvBtn" class="add-btn">+ Ny</button>
+                </div>
+                <div id="atvProfilesList" class="atv-profiles-list"></div>
+            </section>
+
+            <!-- ATV Detail View -->
+            <section id="atvDetailView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvDetail" class="back-btn">← Tilbake</button>
+                    <h2>ATV Detaljer</h2>
+                </div>
+                <div id="atvDetailContent" class="atv-detail-content"></div>
+            </section>
+
+            <!-- ATV Battery View -->
+            <section id="atvBatteryView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvBattery" class="back-btn">← Tilbake</button>
+                    <h2>🔋 Batterioversikt</h2>
+                    <button id="addBatteryBtn" class="add-btn">+ Nytt</button>
+                </div>
+                <div id="atvBatteryList" class="atv-battery-list"></div>
+            </section>
+
+            <!-- Battery Detail View -->
+            <section id="batteryDetailView" class="view">
+                <div class="view-header">
+                    <button id="backFromBatteryDetail" class="back-btn">← Tilbake</button>
+                    <h2>Batteridetaljer</h2>
+                </div>
+                <div id="batteryDetailContent" class="battery-detail-content"></div>
+            </section>
+
+            <!-- ATV Repairs View -->
+            <section id="atvRepairsView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvRepairs" class="back-btn">← Tilbake</button>
+                    <h2>🔧 Reparasjoner</h2>
+                    <button id="addRepairBtn" class="add-btn">+ Ny</button>
+                </div>
+                <div class="atv-filter-bar">
+                    <select id="repairFilterAtv">
+                        <option value="all">Alle ATV-er</option>
+                    </select>
+                    <select id="repairFilterType">
+                        <option value="all">Alle typer</option>
+                        <option value="service">Service</option>
+                        <option value="repair">Reparasjon</option>
+                        <option value="upgrade">Oppgradering</option>
+                        <option value="inspection">Inspeksjon</option>
+                        <option value="emergency">Akutt</option>
+                    </select>
+                </div>
+                <div id="atvRepairsList" class="atv-repairs-list"></div>
+            </section>
+
+            <!-- Repair Detail View -->
+            <section id="repairDetailView" class="view">
+                <div class="view-header">
+                    <button id="backFromRepairDetail" class="back-btn">← Tilbake</button>
+                    <h2>Reparasjonsdetaljer</h2>
+                </div>
+                <div id="repairDetailContent" class="repair-detail-content"></div>
+            </section>
+
+            <!-- ATV Tools View -->
+            <section id="atvToolsView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvTools" class="back-btn">← Tilbake</button>
+                    <h2>🛠️ Verktøy</h2>
+                </div>
+                <div id="atvToolsList" class="atv-tools-list"></div>
+            </section>
+
+            <!-- ATV Parts View -->
+            <section id="atvPartsView" class="view">
+                <div class="view-header">
+                    <button id="backFromAtvParts" class="back-btn">← Tilbake</button>
+                    <h2>📦 Deler & Forbruk</h2>
+                </div>
+                <div id="atvPartsList" class="atv-parts-list"></div>
+            </section>
         </main>
 
         <!-- FAB -->
@@ -329,6 +441,7 @@
         </div>
         <div class="menu-items">
             <button id="menuHome" class="menu-item">🏠 Hjem</button>
+            <button id="menuAtv" class="menu-item atv-menu-item" onclick="showAtvView('atvDashboardView'); closeMenu();">🏍️ ATV Senter</button>
             <button id="menuSettings" class="menu-item">⚙️ Innstillinger</button>
             <button id="menuCategories" class="menu-item">📁 Kategorier</button>
             <button id="menuGallery" class="menu-item">📸 Bildegalleri</button>
@@ -691,6 +804,262 @@
                     <p class="empty-gallery-text">Ingen bilder ennå. Last opp bilder for å komme i gang!</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         ATV MODALER
+         ========================================== -->
+
+    <!-- ATV Modal -->
+    <div id="atvModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="atvModalTitle">Ny ATV</h2>
+                <button id="closeAtvModal" class="close-btn">✕</button>
+            </div>
+            <form id="atvForm" class="modal-form">
+                <div class="form-group">
+                    <label for="atvName">Navn *</label>
+                    <input type="text" id="atvName" required placeholder="F.eks. Polaris Sportsman">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="atvModel">Modell</label>
+                        <input type="text" id="atvModel" placeholder="F.eks. Sportsman 570">
+                    </div>
+                    <div class="form-group">
+                        <label for="atvYear">Årsmodell</label>
+                        <input type="text" id="atvYear" placeholder="F.eks. 2020">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="atvEngineType">Motortype</label>
+                    <input type="text" id="atvEngineType" placeholder="F.eks. 567cc bensin">
+                </div>
+                <div class="form-group">
+                    <label for="atvBatteryType">Batteritype</label>
+                    <input type="text" id="atvBatteryType" placeholder="F.eks. 12V AGM">
+                </div>
+                <div class="form-group">
+                    <label for="atvServiceInterval">Serviceintervall (km/timer)</label>
+                    <input type="text" id="atvServiceInterval" placeholder="F.eks. 1000">
+                </div>
+                <div class="form-group">
+                    <label for="atvNotes">Notater</label>
+                    <textarea id="atvNotes" rows="3" placeholder="Ekstra info om ATV-en..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Battery Modal -->
+    <div id="batteryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nytt batteri</h2>
+                <button id="closeBatteryModal" class="close-btn">✕</button>
+            </div>
+            <form id="batteryForm" class="modal-form">
+                <div class="form-group">
+                    <label for="batteryAtvSelect">ATV *</label>
+                    <select id="batteryAtvSelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="batteryName">Batterinavn</label>
+                    <input type="text" id="batteryName" placeholder="F.eks. Hovedbatteri">
+                </div>
+                <div class="form-group">
+                    <label for="batteryType">Batteritype</label>
+                    <input type="text" id="batteryType" placeholder="F.eks. 12V 18Ah AGM">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Battery Measurement Modal -->
+    <div id="batteryMeasurementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔋 Logg batterimåling</h2>
+                <button id="closeBatteryMeasurementModal" class="close-btn">✕</button>
+            </div>
+            <form id="batteryMeasurementForm" class="modal-form">
+                <div class="form-group">
+                    <label for="measurementBatterySelect">Batteri *</label>
+                    <select id="measurementBatterySelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="measurementVoltage">Spenning (V) *</label>
+                    <input type="number" id="measurementVoltage" step="0.01" min="10" max="15" required placeholder="F.eks. 12.65">
+                </div>
+                <div class="form-group">
+                    <label for="measurementTemperature">Temperatur (°C)</label>
+                    <input type="number" id="measurementTemperature" step="1" placeholder="F.eks. 15">
+                </div>
+                <div class="form-group">
+                    <label for="measurementNotes">Notat</label>
+                    <input type="text" id="measurementNotes" placeholder="F.eks. Etter lading">
+                </div>
+                <div id="measurementPrediction" class="measurement-prediction">
+                    <p class="prediction-hint">Skriv inn spenning for å se prediksjon</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">📊 Lagre måling</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Repair Modal -->
+    <div id="repairModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Ny reparasjon</h2>
+                <button id="closeRepairModal" class="close-btn">✕</button>
+            </div>
+            <form id="repairForm" class="modal-form">
+                <div class="form-group">
+                    <label for="repairAtvSelect">ATV *</label>
+                    <select id="repairAtvSelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="repairTitle">Tittel *</label>
+                    <input type="text" id="repairTitle" required placeholder="F.eks. Oljeskift">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="repairType">Type</label>
+                        <select id="repairType">
+                            <option value="service">🔧 Service</option>
+                            <option value="repair">🛠️ Reparasjon</option>
+                            <option value="upgrade">⬆️ Oppgradering</option>
+                            <option value="inspection">🔍 Inspeksjon</option>
+                            <option value="emergency">🆘 Akutt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="repairDate">Dato</label>
+                        <input type="date" id="repairDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="repairDescription">Beskrivelse</label>
+                    <textarea id="repairDescription" rows="4" placeholder="Hva ble gjort..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="repairParts">Deler brukt</label>
+                    <input type="text" id="repairParts" placeholder="F.eks. Oljefilter, 4L olje">
+                </div>
+                <div class="form-group">
+                    <label for="repairTools">Verktøy brukt</label>
+                    <input type="text" id="repairTools" placeholder="F.eks. Momentnøkkel, oljetrakt">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="repairWorkTime">Arbeidstid</label>
+                        <input type="text" id="repairWorkTime" placeholder="F.eks. 2 timer">
+                    </div>
+                    <div class="form-group">
+                        <label for="repairCost">Kostnad (kr)</label>
+                        <input type="number" id="repairCost" placeholder="F.eks. 850">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Bilder</label>
+                    <div class="image-buttons">
+                        <button type="button" id="repairAddImageBtn" class="img-btn">📷 Velg bilde</button>
+                        <button type="button" id="repairCameraBtn" class="img-btn">📸 Ta bilde</button>
+                    </div>
+                    <input type="file" id="repairImageInput" accept="image/*" multiple hidden>
+                    <input type="file" id="repairCameraInput" accept="image/*" capture="environment" hidden>
+                    <div id="repairImagePreviewList" class="image-preview-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tool Modal -->
+    <div id="toolModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="toolModalTitle">Verktøy</h2>
+                <button id="closeToolModal" class="close-btn">✕</button>
+            </div>
+            <form id="toolForm" class="modal-form">
+                <div class="form-group">
+                    <label for="toolName">Navn *</label>
+                    <input type="text" id="toolName" required placeholder="F.eks. Momentnøkkel">
+                </div>
+                <div class="form-group">
+                    <label for="toolCategory">Kategori</label>
+                    <select id="toolCategory">
+                        <option value="basis">Basis</option>
+                        <option value="avansert">Avansert</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="toolStatus">Status</label>
+                    <select id="toolStatus">
+                        <option value="ok">✅ OK</option>
+                        <option value="mangler">❌ Mangler</option>
+                        <option value="slitt">⚠️ Slitt</option>
+                        <option value="byttes">🔴 Må byttes</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Part Modal -->
+    <div id="partModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="partModalTitle">Del / Forbruksvare</h2>
+                <button id="closePartModal" class="close-btn">✕</button>
+            </div>
+            <form id="partForm" class="modal-form">
+                <div class="form-group">
+                    <label for="partName">Navn *</label>
+                    <input type="text" id="partName" required placeholder="F.eks. Oljefilter">
+                </div>
+                <div class="form-group">
+                    <label for="partType">Type</label>
+                    <select id="partType">
+                        <option value="reserve">🔩 Reservedel</option>
+                        <option value="forbruk">🛢️ Forbruksvare</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="partQuantity">Antall</label>
+                        <input type="number" id="partQuantity" min="0" placeholder="F.eks. 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="partUnit">Enhet</label>
+                        <input type="text" id="partUnit" placeholder="F.eks. stk">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="partMinQuantity">Minimumsantall (varsling)</label>
+                    <input type="number" id="partMinQuantity" min="0" placeholder="F.eks. 1">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 Lagre</button>
+                </div>
+            </form>
         </div>
     </div>
 

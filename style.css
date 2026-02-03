@@ -3862,3 +3862,1205 @@ textarea::selection {
         transition-duration: 0.01ms !important;
     }
 }
+/* ==========================================
+   ATV MODUL STYLES
+   Batteri, Service, Verktøy & Deler
+   ========================================== */
+
+/* === ATV Quick Button === */
+.quick-btn.atv-btn {
+    background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+    color: white;
+    border: none;
+}
+
+.quick-btn.atv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+}
+
+.menu-item.atv-menu-item {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(210, 105, 30, 0.1) 100%);
+    border-left: 3px solid #d2691e;
+}
+
+/* === ATV Header === */
+.atv-header {
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+}
+
+/* === ATV Navigation Tabs === */
+.atv-nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background: var(--bg-card);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.atv-nav-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.atv-tab {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border: none;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+
+.atv-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.atv-tab:hover:not(.active) {
+    background: rgba(139, 69, 19, 0.1);
+}
+
+/* === ATV Dashboard Content === */
+.atv-dashboard-content {
+    padding: 16px;
+}
+
+/* === ATV Stats Row === */
+.atv-stats-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.atv-stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.atv-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.atv-stat-card.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #ffc107;
+}
+
+.atv-stat-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.atv-stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+    display: block;
+}
+
+.atv-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* === ATV Sections === */
+.atv-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.atv-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.atv-section-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.atv-see-all-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* === ATV Quick Actions === */
+.atv-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.atv-quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: 0.9rem;
+}
+
+.atv-quick-btn span {
+    font-size: 1.5rem;
+}
+
+.atv-quick-btn:hover {
+    border-color: var(--primary);
+    background: rgba(45, 90, 39, 0.05);
+    transform: translateY(-2px);
+}
+
+/* === ATV Warnings === */
+.atv-warnings-section {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border: 2px solid #ffc107;
+}
+
+.atv-warning-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.atv-warning-card:hover {
+    transform: translateX(4px);
+}
+
+.atv-warning-card.critical {
+    border-left: 4px solid #dc3545;
+}
+
+.atv-warning-card.caution {
+    border-left: 4px solid #ffc107;
+}
+
+.atv-warning-card.warning {
+    border-left: 4px solid #fd7e14;
+}
+
+.atv-warning-icon {
+    font-size: 1.5rem;
+}
+
+.atv-warning-info {
+    flex: 1;
+}
+
+.atv-warning-info strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.atv-warning-voltage {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--danger);
+    margin-right: 8px;
+}
+
+.atv-warning-prob {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.atv-warning-action {
+    font-size: 0.85rem;
+    text-align: right;
+}
+
+/* === ATV Profiles List === */
+.atv-profiles-list {
+    padding: 16px;
+}
+
+.atv-profile-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.atv-profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.atv-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.atv-profile-icon {
+    font-size: 2.5rem;
+}
+
+.atv-profile-main h3 {
+    margin: 0 0 4px 0;
+}
+
+.atv-profile-model {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.atv-profile-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.atv-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.atv-detail-icon {
+    font-size: 1rem;
+}
+
+/* === ATV Profile Preview === */
+.atv-profiles-preview,
+.atv-repairs-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.atv-profile-preview-card,
+.atv-repair-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.atv-profile-preview-card:hover,
+.atv-repair-preview-card:hover {
+    background: rgba(45, 90, 39, 0.1);
+}
+
+.atv-repair-preview-card {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.atv-repair-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.atv-repair-title {
+    font-weight: 500;
+}
+
+.atv-repair-atv {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* === ATV Detail View === */
+.atv-detail-content,
+.battery-detail-content,
+.repair-detail-content {
+    padding: 16px;
+}
+
+.atv-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.atv-detail-icon {
+    font-size: 3rem;
+}
+
+.atv-detail-title {
+    flex: 1;
+}
+
+.atv-detail-title h2 {
+    margin: 0 0 4px 0;
+}
+
+.atv-detail-subtitle {
+    color: var(--text-muted);
+}
+
+.atv-detail-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.atv-detail-info {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.atv-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.atv-info-item {
+    padding: 8px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.atv-info-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.atv-info-value {
+    font-weight: 500;
+}
+
+.atv-notes {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.atv-detail-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+/* === Battery Cards === */
+.atv-battery-list,
+.atv-repairs-list,
+.atv-tools-list,
+.atv-parts-list {
+    padding: 16px;
+}
+
+.atv-battery-group {
+    margin-bottom: 20px;
+}
+
+.atv-battery-group-title {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.atv-battery-card,
+.atv-battery-detail-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+    border-left: 4px solid var(--success);
+}
+
+.atv-battery-card:hover,
+.atv-battery-detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.atv-battery-card.critical,
+.atv-battery-detail-card.critical {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff 0%, #ffebee 100%);
+}
+
+.atv-battery-card.caution,
+.atv-battery-detail-card.caution {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff 0%, #fff8e1 100%);
+}
+
+.atv-battery-card.warning,
+.atv-battery-detail-card.warning {
+    border-left-color: #fd7e14;
+    background: linear-gradient(135deg, #fff 0%, #fff3e0 100%);
+}
+
+.atv-battery-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.atv-battery-icon {
+    font-size: 1.5rem;
+}
+
+.atv-battery-name {
+    font-weight: 500;
+}
+
+.atv-battery-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.atv-battery-voltage {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.atv-battery-prob {
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.atv-battery-recommendation {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.atv-battery-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.atv-battery-type {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.atv-battery-stats {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.atv-battery-voltage-big {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.atv-battery-prob-bar {
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.atv-battery-prob-fill {
+    height: 100%;
+    background: var(--gradient-success);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.atv-battery-prob-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.atv-battery-analysis {
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+}
+
+.atv-battery-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+/* === Battery Detail View === */
+.battery-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.battery-detail-icon {
+    font-size: 3rem;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: var(--radius);
+}
+
+.battery-detail-icon.critical { background: #ffebee; }
+.battery-detail-icon.caution { background: #fff8e1; }
+.battery-detail-icon.warning { background: #fff3e0; }
+.battery-detail-icon.good { background: #e8f5e9; }
+
+.battery-detail-title {
+    flex: 1;
+}
+
+.battery-detail-title h2 {
+    margin: 0 0 4px 0;
+}
+
+.battery-current-status {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.battery-current-status.critical { border: 2px solid #dc3545; }
+.battery-current-status.caution { border: 2px solid #ffc107; }
+.battery-current-status.warning { border: 2px solid #fd7e14; }
+.battery-current-status.good { border: 2px solid var(--success); }
+
+.battery-voltage-display {
+    margin-bottom: 16px;
+}
+
+.battery-voltage-value {
+    font-size: 4rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.battery-voltage-unit {
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.battery-probability-display {
+    margin-bottom: 16px;
+}
+
+/* Circular Progress */
+.battery-prob-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 8px;
+}
+
+.circular-chart {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 3.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+    stroke: var(--success);
+}
+
+.battery-current-status.critical .circle { stroke: #dc3545; }
+.battery-current-status.caution .circle { stroke: #ffc107; }
+.battery-current-status.warning .circle { stroke: #fd7e14; }
+
+@keyframes progress {
+    0% { stroke-dasharray: 0, 100; }
+}
+
+.percentage {
+    fill: var(--text);
+    font-size: 0.5em;
+    text-anchor: middle;
+    font-weight: bold;
+}
+
+.battery-prob-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.battery-recommendation {
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+
+/* Battery Predictions */
+.battery-predictions {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.battery-predictions h3 {
+    margin: 0 0 12px 0;
+}
+
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.prediction-item {
+    text-align: center;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.prediction-time {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.prediction-prob {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+/* Battery Health */
+.battery-health {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.battery-health h3 {
+    margin: 0 0 12px 0;
+}
+
+.health-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.health-stat {
+    text-align: center;
+    padding: 8px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.health-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.health-value {
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.health-value.excellent { color: var(--success); }
+.health-value.good { color: #4caf50; }
+.health-value.fair { color: #ffc107; }
+.health-value.poor { color: #dc3545; }
+
+.health-message {
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Battery History */
+.battery-history {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.battery-history h3 {
+    margin: 0 0 12px 0;
+}
+
+.measurement-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.measurement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+.measurement-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.measurement-voltage {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.measurement-temp {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.measurement-notes {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* === Measurement Prediction === */
+.measurement-prediction {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.prediction-hint {
+    color: var(--text-muted);
+    text-align: center;
+    margin: 0;
+}
+
+.prediction-result {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+}
+
+.prediction-result.good { background: #e8f5e9; }
+.prediction-result.warning { background: #fff3e0; }
+.prediction-result.caution { background: #fff8e1; }
+.prediction-result.critical { background: #ffebee; }
+
+.prediction-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.prediction-label {
+    color: var(--text-muted);
+}
+
+.prediction-value {
+    font-weight: bold;
+}
+
+.prediction-recommendation {
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* === Repairs List === */
+.atv-filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+
+.atv-filter-bar select {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+}
+
+.atv-repair-list-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.atv-repair-list-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.repair-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.repair-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.repair-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    background: var(--bg);
+}
+
+.repair-type-badge.service { background: #e3f2fd; color: #1976d2; }
+.repair-type-badge.repair { background: #fff3e0; color: #f57c00; }
+.repair-type-badge.upgrade { background: #e8f5e9; color: #388e3c; }
+.repair-type-badge.inspection { background: #f3e5f5; color: #7b1fa2; }
+.repair-type-badge.emergency { background: #ffebee; color: #c62828; }
+
+.repair-card-body h4 {
+    margin: 0 0 4px 0;
+}
+
+.repair-atv {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.repair-card-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* === Repair Detail === */
+.repair-detail-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.repair-detail-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.repair-detail-date {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.repair-detail-header h2 {
+    margin: 0 0 4px 0;
+}
+
+.repair-detail-atv {
+    color: var(--text-muted);
+}
+
+.repair-detail-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.repair-detail-body {
+    /* Wrapper for repair sections */
+}
+
+.repair-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.repair-section h3 {
+    margin: 0 0 12px 0;
+}
+
+.repair-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.repair-info-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.repair-info-icon {
+    font-size: 1.5rem;
+}
+
+.repair-info-content strong {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.repair-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+}
+
+.repair-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.repair-image:hover {
+    transform: scale(1.05);
+}
+
+/* === Tools List === */
+.tools-section {
+    margin-bottom: 20px;
+}
+
+.tools-section h3 {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+}
+
+.tool-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+    border: 2px solid transparent;
+}
+
+.tool-card:hover {
+    border-color: var(--primary);
+}
+
+.tool-card.ok {
+    border-left: 3px solid var(--success);
+}
+
+.tool-card.missing {
+    border-left: 3px solid #dc3545;
+    background: #ffebee;
+}
+
+.tool-card.worn {
+    border-left: 3px solid #ffc107;
+    background: #fff8e1;
+}
+
+.tool-card.replace {
+    border-left: 3px solid #dc3545;
+    background: #ffebee;
+}
+
+.tool-status {
+    font-size: 1rem;
+}
+
+.tool-name {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+/* === Parts List === */
+.parts-section {
+    margin-bottom: 20px;
+}
+
+.parts-section h3 {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.parts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.part-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.part-card:hover {
+    background: rgba(45, 90, 39, 0.05);
+}
+
+.part-card.low-stock {
+    background: #fff3e0;
+    border: 2px solid #ffc107;
+}
+
+.part-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.part-name {
+    font-weight: 500;
+}
+
+.part-quantity {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.part-warning {
+    font-size: 0.85rem;
+    color: #f57c00;
+}
+
+/* === Btn Small === */
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-small:hover {
+    background: var(--primary-light);
+}
+
+/* === Has Images Badge === */
+.atv-has-images {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 4px;
+}
+
+/* === Responsive === */
+@media (max-width: 480px) {
+    .atv-stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .atv-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .health-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .prediction-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .repair-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tools-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
